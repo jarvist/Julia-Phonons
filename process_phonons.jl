@@ -1,12 +1,14 @@
 import YAML
 
-mesh = YAML.load(open("mesh.yaml"))
-POSCAR = YAML.load(open("POSCAR.yaml"))
+mesh = YAML.load(open("mesh.yaml"))     #Phonopy mesh.yaml file; with phonons
+POSCAR = YAML.load(open("POSCAR.yaml")) #A bit of a twisted POSCAR->yaml format
 
-NATOMS=12 # Should _not_ be hardcoded!
+NATOMS=sum(POSCAR["speciescount"]) # Reads atoms from sum of POSCAR species line 
+println("NATOMS ==> ",NATOMS)
 
 println(POSCAR["positions"])
 positions=[POSCAR["positions"][n][d] for n=1:NATOMS,d=1:3 ]
+lattice=POSCAR["lattice"] # Nb: just uses [1][1] value as const. scale factor
 
 # The following is probably overkill, but reads the VASP atom formats + expands
 # into a one dimensional string vector 
@@ -23,7 +25,8 @@ for (speciescount,species) in zip(POSCAR["speciescount"],POSCAR["species"])
 end
 # OK; we've built atomnames[] to reproduce POSCAR
 
-mode=1
+
+mode=1 # should be a better way to do this...
 # Data structure looks like: mesh["phonon"][1]["band"][2]["eigenvector"][1][2][1]
 for (eigenvector,freq) in mesh["phonon"][1]["band"]
     filename= @sprintf("anim_%02d.xyz",mode)
@@ -43,7 +46,7 @@ for (eigenvector,freq) in mesh["phonon"][1]["band"]
     realeigenvector=reshape(realeigenvector,NATOMS,3) # doesn't do anything?
 
     for phi=0:pi/8:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
-        projection=6.3*positions+10*realeigenvector*sin(phi) # this does all the maths
+        projection=lattice[1][1]*positions+2*realeigenvector*sin(phi) # this does all the maths
 
         # output routines to .xyz format
         @printf(anim,"%d\n\n",NATOMS) # header for .xyz multi part files
