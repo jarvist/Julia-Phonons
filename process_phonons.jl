@@ -23,13 +23,11 @@ for (speciescount,species) in zip(POSCAR["speciescount"],POSCAR["species"])
     for i=1:speciescount push!(atomnames,species) end
     println(atomnames)
 end
-# OK; we've built atomnames[] to reproduce POSCAR
+# OK; we've built atomnames[], mainly for use with outputs... 
 
-
-mode=1 # should be a better way to do this...
 # Data structure looks like: mesh["phonon"][1]["band"][2]["eigenvector"][1][2][1]
-for (eigenvector,freq) in mesh["phonon"][1]["band"]
-    filename= @sprintf("anim_%02d.xyz",mode)
+for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
+    filename= @sprintf("anim_%02d.xyz",eigenmode)
     anim=open(filename,"w")
     println("freq ==> ",freq[2])
 #    println("phonon[\"eigenvector\"] ==>",phonon["eigenvector"])
@@ -56,7 +54,5 @@ for (eigenvector,freq) in mesh["phonon"][1]["band"]
         end
     end
     close(anim)
-    mode=mode+1
 end
 
-    #POSCAR["positions"][1]
