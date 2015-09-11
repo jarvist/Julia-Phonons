@@ -8,7 +8,7 @@ println("NATOMS ==> ",NATOMS)
 
 println(POSCAR["positions"])
 positions=[POSCAR["positions"][n][d] for n=1:NATOMS,d=1:3 ]
-lattice=POSCAR["lattice"] # Nb: just uses [1][1] value as const. scale factor
+lattice=[ POSCAR["lattice"][a][b] for a=1:3, b=1:3] # Nb: Array comp for sensible lattice[a][b] julia type 
 
 # The following is probably overkill, but reads the VASP atom formats + expands
 # into a one dimensional string vector 
@@ -44,12 +44,15 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
     realeigenvector=reshape(realeigenvector,NATOMS,3) # doesn't do anything?
 
     for phi=0:pi/8:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
-        projection=lattice[1][1]*positions+2*realeigenvector*sin(phi) # this does all the maths
+        projection=positions+0.2*realeigenvector*sin(phi) # this projects all coords at once 
+        projection=lattice*projection' # Fractional --> Real coords via [3x3] lattice coords
+        projection=projection'         # tranpose matrix to get it back to what we want
 
+        show(projection)
         # output routines to .xyz format
         @printf(anim,"%d\n\n",NATOMS) # header for .xyz multi part files
         for i=1:size(projection,1) 
-#            println("u ==> ",projection[i,:])
+            println("u ==> ",projection[i,:])
             @printf(anim,"%s %f %f %f\n",atomnames[i],projection[i,1],projection[i,2],projection[i,3])
         end
     end
@@ -60,10 +63,10 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
         println(show(positions[I,:]))
         PbI=positions[I,:]-positions[9,:] # Vector from Pb to I
         show(PbI)
-        @printf("I: %d PbI: %f %f %f Phonon-u: %f %f %f PbI.Phonon-u: %f\n",I,
-        PbI[1],PbI[2],PbI[3],
-        realeigenvector[I,1],realeigenvector[I,2],realeigenvector[I,3],
-        dot(PbI::Float64,realeigenvector[I]::Float64) ) 
+#        @printf("I: %d PbI: %f %f %f Phonon-u: %f %f %f PbI.Phonon-u: %f\n",I,
+#        PbI[1],PbI[2],PbI[3],
+#        realeigenvector[I,1],realeigenvector[I,2],realeigenvector[I,3],
+#        dot(PbI::Float64,realeigenvector[I]::Float64) ) 
     end
 end
 
