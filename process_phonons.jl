@@ -44,7 +44,10 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
     realeigenvector=reshape(realeigenvector,NATOMS,3) # doesn't do anything?
 
     for phi=0:pi/8:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
-        projection=lattice[1][1]*positions+2*realeigenvector*sin(phi) # this does all the maths
+        projection= lattice[1][1]*positions + 2*realeigenvector*sin(phi) # this does all the maths
+        println("Lattice: ",lattice,"\n Eigenvec: ",realeigenvector)
+        #projection=positions*lattice + 2*sin(phi)*realeigenvector
+        println("Projection: ",projection)
 
         # output routines to .xyz format
         @printf(anim,"%d\n\n",NATOMS) # header for .xyz multi part files
@@ -55,6 +58,7 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
     end
     close(anim)
 
+#=    
     for I=10:12 # iodine indexes, hard coded
         println(show(positions))
         println(show(positions[I,:]))
@@ -63,7 +67,8 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
         @printf("I: %d PbI: %f %f %f Phonon-u: %f %f %f PbI.Phonon-u: %f\n",I,
         PbI[1],PbI[2],PbI[3],
         realeigenvector[I,1],realeigenvector[I,2],realeigenvector[I,3],
-        dot(PbI::Float64,realeigenvector[I]::Float64) ) 
+        dot(PbI::Float64,realeigenvector[I]::Float64) )
     end
+=#
 end
 
