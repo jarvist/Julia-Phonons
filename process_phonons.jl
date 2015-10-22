@@ -1,5 +1,9 @@
 import YAML
 
+# This would be better in a general library!
+atomicmass = Dict{AbstractString,Float64}("H"=>1, "C" => 12.01, "N" => 14.01, "S" => 32.07, "Zn" => 65.38, "I" => 126.9, "Pb" => 207.2)
+#Zn is actuall Sn; stupid work-around for Pymol seeing 'Sn' as 'S'
+
 mesh = YAML.load(open("mesh.yaml"))     #Phonopy mesh.yaml file; with phonons
 POSCAR = YAML.load(open("POSCAR.yaml")) #A bit of a twisted POSCAR->yaml format
 
@@ -54,9 +58,9 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
         @printf(anim,"%d\n\n",NATOMS) # header for .xyz multi part files
         for i=1:NATOMS
 #            println("u ==> ",projection[i,:])
-            println("Positions[",i,"]: ",positions[i,:])
-            println("Realeigenvector[",i,"]: ",realeigenvector[i,:])
-            projection=lattice * (positions[i,:]' + realeigenvector[i,:]'*sin(phi))
+#            println("Positions[",i,"]: ",positions[i,:])
+#            println("Realeigenvector[",i,"]: ",realeigenvector[i,:])
+            projection=lattice * (positions[i,:]' + 0.02 * sqrt(atomicmass[atomnames[i]]) * realeigenvector[i,:]'*sin(phi))
             @printf(anim,"%s %f %f %f\n",atomnames[i],projection[1],projection[2],projection[3])
         end
     end
