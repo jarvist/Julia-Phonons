@@ -8,7 +8,7 @@ println("NATOMS ==> ",NATOMS)
 
 println(POSCAR["positions"])
 positions=[POSCAR["positions"][n][d]::Float64 for n=1:NATOMS,d=1:3 ]
-lattice=[ POSCAR["lattice"][d][a]::Float64 for d=1:3,a=1:3] # Nb: just uses [1][1] value as const. scale factor
+lattice=[ POSCAR["lattice"][d][a]::Float64 for d=1:3,a=1:3] # Nb: Array comp for sensible lattice[a][b] julia type 
 println("lattice ==> ",lattice)
 
 # The following is probably overkill, but reads the VASP atom formats + expands
