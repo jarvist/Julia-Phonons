@@ -7,8 +7,9 @@ NATOMS=sum(POSCAR["speciescount"]) # Reads atoms from sum of POSCAR species line
 println("NATOMS ==> ",NATOMS)
 
 println(POSCAR["positions"])
-positions=[POSCAR["positions"][n][d] for n=1:NATOMS,d=1:3 ]
-lattice=POSCAR["lattice"] # Nb: just uses [1][1] value as const. scale factor
+positions=[POSCAR["positions"][n][d]::Float64 for n=1:NATOMS,d=1:3 ]
+lattice=[ POSCAR["lattice"][d][a]::Float64 for d=1:3,a=1:3] # Nb: just uses [1][1] value as const. scale factor
+println("lattice ==> ",lattice)
 
 # The following is probably overkill, but reads the VASP atom formats + expands
 # into a one dimensional string vector 
@@ -39,21 +40,24 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
 #        println(disp)
 #    end
 
-    realeigenvector=[ eigenvector[2][n][d][1] for n=1:NATOMS, d=1:3 ]
+    realeigenvector=[ eigenvector[2][n][d][1]::Float64 for n=1:NATOMS, d=1:3 ]
     # Array comprehension to reform mesh.yaml format into [n][d] shap
     realeigenvector=reshape(realeigenvector,NATOMS,3) # doesn't do anything?
 
     for phi=0:pi/8:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
-        projection= lattice[1][1]*positions + 2*realeigenvector*sin(phi) # this does all the maths
-        println("Lattice: ",lattice,"\n Eigenvec: ",realeigenvector)
+#        projection= lattice[1][1]*positions + 2*realeigenvector*sin(phi) # this does all the maths
+#        println("Lattice: ",lattice,"\n Eigenvec: ",realeigenvector)
         #projection=positions*lattice + 2*sin(phi)*realeigenvector
-        println("Projection: ",projection)
+#        println("Projection: ",projection)
 
         # output routines to .xyz format
         @printf(anim,"%d\n\n",NATOMS) # header for .xyz multi part files
-        for i=1:size(projection,1) 
+        for i=1:NATOMS
 #            println("u ==> ",projection[i,:])
-            @printf(anim,"%s %f %f %f\n",atomnames[i],projection[i,1],projection[i,2],projection[i,3])
+            println("Positions[",i,"]: ",positions[i,:])
+            println("Realeigenvector[",i,"]: ",realeigenvector[i,:])
+            projection=lattice * (positions[i,:]' + realeigenvector[i,:]'*sin(phi))
+            @printf(anim,"%s %f %f %f\n",atomnames[i],projection[1],projection[2],projection[3])
         end
     end
     close(anim)
