@@ -15,6 +15,10 @@ positions=[POSCAR["positions"][n][d]::Float64 for n=1:NATOMS,d=1:3 ]
 lattice=[ POSCAR["lattice"][d][a]::Float64 for d=1:3,a=1:3] # Nb: Array comp for sensible lattice[a][b] julia type 
 println("lattice ==> ",lattice)
 
+# SUPERCELL definition
+supercellexpansions=[ a*lattice[1,:] + b*lattice[2,:] + c*lattice[3,:] for a=0:1,b=0:1,c=0:1 ] #generates set of lattice vectors to apply for supercell expansions
+println("supercellexpansions ==>",supercellexpansions)
+
 # The following is probably overkill, but reads the VASP atom formats + expands
 # into a one dimensional string vector 
 #     species:    C    N    H    Pb   I
@@ -55,13 +59,16 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
 #        println("Projection: ",projection)
 
         # output routines to .xyz format
-        @printf(anim,"%d\n\n",NATOMS) # header for .xyz multi part files
+        @printf(anim,"%d\n\n",NATOMS*length(supercellexpansions)) # header for .xyz multi part files
         for i=1:NATOMS
 #            println("u ==> ",projection[i,:])
 #            println("Positions[",i,"]: ",positions[i,:])
 #            println("Realeigenvector[",i,"]: ",realeigenvector[i,:])
             projection=lattice * (positions[i,:]' + 0.02 * sqrt(atomicmass[atomnames[i]]) * realeigenvector[i,:]'*sin(phi))
-            @printf(anim,"%s %f %f %f\n",atomnames[i],projection[1],projection[2],projection[3])
+            for supercellexpansion in supercellexpansions
+                supercellprojection=projection+supercellexpansion'
+                @printf(anim,"%s %f %f %f\n",atomnames[i],supercellprojection[1],supercellprojection[2],supercellprojection[3])
+            end
         end
     end
     close(anim)
