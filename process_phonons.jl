@@ -2,7 +2,8 @@ import YAML
 
 # This would be better in a general library!
 atomicmass = Dict{AbstractString,Float64}("H"=>1, "C" => 12.01, "N" => 14.01, "S" => 32.07, "Zn" => 65.38, "I" => 126.9, "Pb" => 207.2)
-#Zn is actuall Sn; stupid work-around for Pymol seeing 'Sn' as 'S'
+#Zn is actually Sn; stupid work-around for Pymol seeing 'Sn' as 'S'
+#The initial test cases which I am covering, are phonons of CH3NH3.PbI3 and SnS
 
 mesh = YAML.load(open("mesh.yaml"))     #Phonopy mesh.yaml file; with phonons
 POSCAR = YAML.load(open("POSCAR.yaml")) #A bit of a twisted POSCAR->yaml format
@@ -10,8 +11,9 @@ POSCAR = YAML.load(open("POSCAR.yaml")) #A bit of a twisted POSCAR->yaml format
 NATOMS=sum(POSCAR["speciescount"]) # Reads atoms from sum of POSCAR species line 
 println("NATOMS ==> ",NATOMS)
 
-println(POSCAR["positions"])
-positions=[POSCAR["positions"][n][d]::Float64 for n=1:NATOMS,d=1:3 ]
+positions=[POSCAR["positions"][n][d]::Float64 for n=1:NATOMS,d=1:3 ] # Array comphrehension to eval as floats
+println("positions ==> ",positions)
+
 lattice=[ POSCAR["lattice"][d][a]::Float64 for d=1:3,a=1:3] # Nb: Array comp for sensible lattice[a][b] julia type 
 println("lattice ==> ",lattice)
 
@@ -38,7 +40,7 @@ end
 for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
     filename= @sprintf("anim_%02d.xyz",eigenmode)
     anim=open(filename,"w")
-    println("freq ==> ",freq[2])
+    println("freq (THz) ==> ",freq[2])
 #    println("phonon[\"eigenvector\"] ==>",phonon["eigenvector"])
 #    println("eigenvector ==> ",eigenvector[2])
 #    for atom in eigenvector[2]
