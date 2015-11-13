@@ -54,7 +54,7 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
     # Array comprehension to reform mesh.yaml format into [n][d] shap
     realeigenvector=reshape(realeigenvector,NATOMS,3) # doesn't do anything?
 
-    for phi=0:pi/8:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
+    for phi=0:pi/32:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
 #        projection= lattice[1][1]*positions + 2*realeigenvector*sin(phi) # this does all the maths
 #        println("Lattice: ",lattice,"\n Eigenvec: ",realeigenvector)
         #projection=positions*lattice + 2*sin(phi)*realeigenvector
