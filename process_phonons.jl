@@ -36,11 +36,11 @@ for (speciescount,species) in zip(POSCAR["speciescount"],POSCAR["species"])
 end
 # OK; we've built atomnames[], mainly for use with outputs... 
 
-function output_animated_xyz(eigenmode,eigenvector,freq)
+function output_animated_xyz(eigenmode,eigenvector,freq,steps=32)
     filename= @sprintf("anim_%02d.xyz",eigenmode)
     anim=open(filename,"w")
 
-    for phi=0:pi/32:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
+    for phi=0:2*pi/steps:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
 #        projection= lattice[1][1]*positions + 2*realeigenvector*sin(phi) # this does all the maths
 #        println("Lattice: ",lattice,"\n Eigenvec: ",realeigenvector)
         #projection=positions*lattice + 2*sin(phi)*realeigenvector
@@ -81,17 +81,23 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
     # Array comprehension to reform mesh.yaml format into [n][d] shap
     realeigenvector=reshape(realeigenvector,NATOMS,3) # doesn't do anything?
 
-#    output_animated_xyz(eigenmode,realeigenvector,freq)
+    output_animated_xyz(eigenmode,realeigenvector,freq)
 
     normsum=0.0
     normsummassweighted=0.0
     for i=1:NATOMS
-        println("Mode: ",eigenmode," Atom: ",i," ",atomnames[i]," Norm: ",norm(realeigenvector[i,:]),
-        " Norm(mass weighted): ",norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]])) 
         normsum+=norm(realeigenvector[i,:])
         normsummassweighted+=norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]])
     end
     println("Norm sum: ",normsum, " Norm sum(mass weighted): ",normsummassweighted)
+    for i=1:NATOMS    
+        println("Mode: ",eigenmode," Atom: ",i," ",atomnames[i],
+        "\n",
+        " Norm: ", norm(realeigenvector[i,:]),
+        " Norm(weighted): ",norm(realeigenvector[i,:])/normsum,
+        " Norm(mass weighted): ",(norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]]))/normsummassweighted)
+    end
+    
 #=    
     for I=10:12 # iodine indexes, hard coded
         println(show(positions))
