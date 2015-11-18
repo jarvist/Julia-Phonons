@@ -53,7 +53,10 @@ function output_animated_xyz(eigenmode,eigenvector,freq,steps=32)
 #            println("Positions[",i,"]: ",positions[i,:])
 #            println("Realeigenvector[",i,"]: ",realeigenvector[i,:])
 
-            projection=lattice * (positions[i,:]' + 0.02 * sqrt(atomicmass[atomnames[i]]) * eigenvector[i,:]'*sin(phi))
+# NB: Currently uncertain as to whether to apply mass weighting by:-
+#   diving the eigenvector by sqrt(amu) - converting from Energy --> displacement
+#   multiplying the eigenvector by sqrt(amu) - weighting the Dynamic matrix with atomic mass ?
+            projection=lattice * (positions[i,:]' + 0.2 / sqrt(atomicmass[atomnames[i]]) * eigenvector[i,:]'*sin(phi))
             for supercellexpansion in supercellexpansions
                 supercellprojection=projection+supercellexpansion'
                 @printf(anim,"%s %f %f %f\n",atomnames[i],supercellprojection[1],supercellprojection[2],supercellprojection[3])
@@ -92,8 +95,8 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
     println("Norm sum: ",normsum, " Norm sum(mass weighted): ",normsummassweighted)
     for i=1:NATOMS    
         println("Mode: ",eigenmode," Atom: ",i," ",atomnames[i],
-        "\n",
-        " Norm: ", norm(realeigenvector[i,:]),
+#        "\n",
+#        " Norm: ", norm(realeigenvector[i,:]),
         " Norm(weighted): ",norm(realeigenvector[i,:])/normsum,
         " Norm(mass weighted): ",(norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]]))/normsummassweighted)
     end
