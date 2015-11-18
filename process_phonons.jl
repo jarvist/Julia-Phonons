@@ -67,7 +67,7 @@ end
 
 # Data structure looks like: mesh["phonon"][1]["band"][2]["eigenvector"][1][2][1]
 for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
-    println("freq (THz) ==> ",freq[2])
+    println("freq (THz) ==> ",freq[2], "Wavenumbers (cm-1, 3sf) ==> ",freq[2]*33.36)
 #    println("phonon[\"eigenvector\"] ==>",phonon["eigenvector"])
 #    println("eigenvector ==> ",eigenvector[2])
 #    for atom in eigenvector[2]
@@ -83,9 +83,15 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
 
 #    output_animated_xyz(eigenmode,realeigenvector,freq)
 
+    normsum=0.0
+    normsummassweighted=0.0
     for i=1:NATOMS
-        println("Mode: ",eigenmode," Atom: ",i," ",atomnames[i]," Norm: ",norm(realeigenvector[i,:])) 
+        println("Mode: ",eigenmode," Atom: ",i," ",atomnames[i]," Norm: ",norm(realeigenvector[i,:]),
+        " Norm(mass weighted): ",norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]])) 
+        normsum+=norm(realeigenvector[i,:])
+        normsummassweighted+=norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]])
     end
+    println("Norm sum: ",normsum, " Norm sum(mass weighted): ",normsummassweighted)
 #=    
     for I=10:12 # iodine indexes, hard coded
         println(show(positions))
