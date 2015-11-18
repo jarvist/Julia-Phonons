@@ -36,10 +36,38 @@ for (speciescount,species) in zip(POSCAR["speciescount"],POSCAR["species"])
 end
 # OK; we've built atomnames[], mainly for use with outputs... 
 
-# Data structure looks like: mesh["phonon"][1]["band"][2]["eigenvector"][1][2][1]
-for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
+function output_animated_xyz(eigenmode,eigenvector,freq)
     filename= @sprintf("anim_%02d.xyz",eigenmode)
     anim=open(filename,"w")
+
+    for phi=0:pi/32:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
+#        projection= lattice[1][1]*positions + 2*realeigenvector*sin(phi) # this does all the maths
+#        println("Lattice: ",lattice,"\n Eigenvec: ",realeigenvector)
+        #projection=positions*lattice + 2*sin(phi)*realeigenvector
+#        println("Projection: ",projection)
+
+        # output routines to .xyz format
+        @printf(anim,"%d\n\n",NATOMS*length(supercellexpansions)) # header for .xyz multi part files
+        for i=1:NATOMS
+#            println("u ==> ",projection[i,:])
+#            println("Positions[",i,"]: ",positions[i,:])
+#            println("Realeigenvector[",i,"]: ",realeigenvector[i,:])
+            println("Mode: ",eigenmode," Atom: ",i," Norm: ",norm(eigenvector[i,:])) 
+
+            projection=lattice * (positions[i,:]' + 0.02 * sqrt(atomicmass[atomnames[i]]) * eigenvector[i,:]'*sin(phi))
+            for supercellexpansion in supercellexpansions
+                supercellprojection=projection+supercellexpansion'
+                @printf(anim,"%s %f %f %f\n",atomnames[i],supercellprojection[1],supercellprojection[2],supercellprojection[3])
+            end
+        end
+    end
+    close(anim)
+
+
+end
+
+# Data structure looks like: mesh["phonon"][1]["band"][2]["eigenvector"][1][2][1]
+for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
     println("freq (THz) ==> ",freq[2])
 #    println("phonon[\"eigenvector\"] ==>",phonon["eigenvector"])
 #    println("eigenvector ==> ",eigenvector[2])
@@ -54,26 +82,7 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
     # Array comprehension to reform mesh.yaml format into [n][d] shap
     realeigenvector=reshape(realeigenvector,NATOMS,3) # doesn't do anything?
 
-    for phi=0:pi/32:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
-#        projection= lattice[1][1]*positions + 2*realeigenvector*sin(phi) # this does all the maths
-#        println("Lattice: ",lattice,"\n Eigenvec: ",realeigenvector)
-        #projection=positions*lattice + 2*sin(phi)*realeigenvector
-#        println("Projection: ",projection)
-
-        # output routines to .xyz format
-        @printf(anim,"%d\n\n",NATOMS*length(supercellexpansions)) # header for .xyz multi part files
-        for i=1:NATOMS
-#            println("u ==> ",projection[i,:])
-#            println("Positions[",i,"]: ",positions[i,:])
-#            println("Realeigenvector[",i,"]: ",realeigenvector[i,:])
-            projection=lattice * (positions[i,:]' + 0.02 * sqrt(atomicmass[atomnames[i]]) * realeigenvector[i,:]'*sin(phi))
-            for supercellexpansion in supercellexpansions
-                supercellprojection=projection+supercellexpansion'
-                @printf(anim,"%s %f %f %f\n",atomnames[i],supercellprojection[1],supercellprojection[2],supercellprojection[3])
-            end
-        end
-    end
-    close(anim)
+    output_animated_xyz(eigenmode,realeigenvector,freq)
 
 #=    
     for I=10:12 # iodine indexes, hard coded
