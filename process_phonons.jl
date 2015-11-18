@@ -52,7 +52,6 @@ function output_animated_xyz(eigenmode,eigenvector,freq)
 #            println("u ==> ",projection[i,:])
 #            println("Positions[",i,"]: ",positions[i,:])
 #            println("Realeigenvector[",i,"]: ",realeigenvector[i,:])
-            println("Mode: ",eigenmode," Atom: ",i," Norm: ",norm(eigenvector[i,:])) 
 
             projection=lattice * (positions[i,:]' + 0.02 * sqrt(atomicmass[atomnames[i]]) * eigenvector[i,:]'*sin(phi))
             for supercellexpansion in supercellexpansions
@@ -82,8 +81,11 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
     # Array comprehension to reform mesh.yaml format into [n][d] shap
     realeigenvector=reshape(realeigenvector,NATOMS,3) # doesn't do anything?
 
-    output_animated_xyz(eigenmode,realeigenvector,freq)
+#    output_animated_xyz(eigenmode,realeigenvector,freq)
 
+    for i=1:NATOMS
+        println("Mode: ",eigenmode," Atom: ",i," ",atomnames[i]," Norm: ",norm(realeigenvector[i,:])) 
+    end
 #=    
     for I=10:12 # iodine indexes, hard coded
         println(show(positions))
