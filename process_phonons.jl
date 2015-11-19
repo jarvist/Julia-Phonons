@@ -1,7 +1,7 @@
 import YAML
 
 # This would be better in a general library!
-atomicmass = Dict{AbstractString,Float64}("H"=>1, "C" => 12.01, "N" => 14.01, "S" => 32.07, "Zn" => 65.38, "I" => 126.9, "Pb" => 207.2)
+atomicmass = Dict{AbstractString,Float64}("H"=>1.00794, "C" => 12.01, "N" => 14.01, "S" => 32.07, "Zn" => 65.38, "I" => 126.9, "Pb" => 207.2)
 #Zn is actually Sn; stupid work-around for Pymol seeing 'Sn' as 'S'
 #The initial test cases which I am covering, are phonons of CH3NH3.PbI3 and SnS
 
@@ -68,9 +68,49 @@ function output_animated_xyz(eigenmode,eigenvector,freq,steps=32)
 
 end
 
+function decompose_eigenmode_atomtype(eigenmode,realeigenvector,freq)
+    print("Eigenmode: ",eigenmode)
+    @printf("\tFreq(cm-1): %03.1f\t",freq[2]*33.36)
+
+    atomiccontribution = Dict{AbstractString,Float64}("Pb"=>0.0, "I" => 0.0, "N" => 0.0, "C" => 0.0, "H" => 0.0)
+    for i=1:NATOMS
+        atomiccontribution[atomnames[i]]+= norm(realeigenvector[i,:])
+    end
+    
+    # Now weight every object
+    for contri in keys(atomiccontribution) # Surely a better way that iterating over?
+        atomiccontribution[contri]/=sum(values(atomiccontribution))
+    end
+
+    for contri in ["Pb","I","N","C","H"] 
+        @printf("%s %.3f\t",contri,atomiccontribution[contri])
+    end
+#    println(atomiccontribution)
+    println()
+end
+
+function decompose_eigenmode_atom_contributions(eigenmode,realeigenvector)
+    normsum=0.0
+    normsummassweighted=0.0
+    for i=1:NATOMS
+        normsum+=norm(realeigenvector[i,:])
+        normsummassweighted+=norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]])
+    end
+    println("Norm sum: ",normsum, " Norm sum(mass weighted): ",normsummassweighted)
+    for i=1:NATOMS    
+        println("Mode: ",eigenmode," Atom: ",i," ",atomnames[i],
+#        "\n",
+#        " Norm: ", norm(realeigenvector[i,:]),
+        " Norm(weighted): ",norm(realeigenvector[i,:])/normsum,
+        " Norm(mass weighted): ",(norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]]))/normsummassweighted)
+    end
+end 
+
 # Data structure looks like: mesh["phonon"][1]["band"][2]["eigenvector"][1][2][1]
 for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
-    println("freq (THz) ==> ",freq[2], "Wavenumbers (cm-1, 3sf) ==> ",freq[2]*33.36)
+#    println("freq (THz) ==> ",freq[2], "\tWavenumbers (cm-1, 3sf) ==> ",freq[2]*33.36)
+
+## These functions used when figuring out form / normalisation of eigenvectors, from Phonopy mesh.yaml
 #    println("phonon[\"eigenvector\"] ==>",phonon["eigenvector"])
 #    println("eigenvector ==> ",eigenvector[2])
 #    for atom in eigenvector[2]
@@ -86,21 +126,9 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
 
     output_animated_xyz(eigenmode,realeigenvector,freq)
 
-    normsum=0.0
-    normsummassweighted=0.0
-    for i=1:NATOMS
-        normsum+=norm(realeigenvector[i,:])
-        normsummassweighted+=norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]])
-    end
-    println("Norm sum: ",normsum, " Norm sum(mass weighted): ",normsummassweighted)
-    for i=1:NATOMS    
-        println("Mode: ",eigenmode," Atom: ",i," ",atomnames[i],
-#        "\n",
-#        " Norm: ", norm(realeigenvector[i,:]),
-        " Norm(weighted): ",norm(realeigenvector[i,:])/normsum,
-        " Norm(mass weighted): ",(norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]]))/normsummassweighted)
-    end
-    
+    decompose_eigenmode_atomtype(eigenmode,realeigenvector,freq)
+    #decompose_eigenmode_atom_contributions(eigenmode,realeigenvector)
+   
 #=    
     for I=10:12 # iodine indexes, hard coded
         println(show(positions))
