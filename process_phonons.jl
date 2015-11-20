@@ -76,16 +76,18 @@ function decompose_eigenmode_atomtype(eigenmode,realeigenvector,freq)
     for i=1:NATOMS
         atomiccontribution[atomnames[i]]+= norm(realeigenvector[i,:])
     end
-    
+   
+    totallength=sum(values(atomiccontribution))
     # Now weight every object
     for contri in keys(atomiccontribution) # Surely a better way that iterating over?
-        atomiccontribution[contri]/=sum(values(atomiccontribution))
+        atomiccontribution[contri]/=totallength
     end
 
     for contri in species 
         @printf("%s %.3f\t",contri,atomiccontribution[contri])
     end
 #    println(atomiccontribution)
+#    println(sum(values(atomiccontribution)))
     println()
 end
 
