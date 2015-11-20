@@ -6,35 +6,30 @@ atomicmass = Dict{AbstractString,Float64}("H"=>1.00794, "C" => 12.01, "N" => 14.
 #The initial test cases which I am covering, are phonons of CH3NH3.PbI3 and SnS
 
 mesh = YAML.load(open("mesh.yaml"))     #Phonopy mesh.yaml file; with phonons
-POSCAR = YAML.load(open("POSCAR.yaml")) #A bit of a twisted POSCAR->yaml format
 
-NATOMS=sum(POSCAR["speciescount"]) # Reads atoms from sum of POSCAR species line 
-println("NATOMS ==> ",NATOMS)
+# Native VASP POSCAR reader
+P=readdlm(open("POSCAR","r"))
 
-positions=[POSCAR["positions"][n][d]::Float64 for n=1:NATOMS,d=1:3 ] # Array comphrehension to eval as floats
-println("positions ==> ",positions)
-
-lattice=[ POSCAR["lattice"][d][a]::Float64 for d=1:3,a=1:3] # Nb: Array comp for sensible lattice[a][b] julia type 
-println("lattice ==> ",lattice)
-
-# SUPERCELL definition
-supercellexpansions=[ a*lattice[1,:] + b*lattice[2,:] + c*lattice[3,:] for a=0:1,b=0:1,c=0:1 ] #generates set of lattice vectors to apply for supercell expansions
-println("supercellexpansions ==>",supercellexpansions)
-
+lattice=[ P[l,f]::Float64 for l=3:5,f=1:3 ]
+println(lattice)
+species=[ P[6,f] for f=1:length(P[7,:]) ]
+speciescount=[ P[7,f]::Int for f=1:length(P[7,:]) ]
+NATOMS=sum(speciescount)
+println(species)
+positions=[ P[l,f]::Float64 for l=9:9+NATOMS,f=1:3 ]
 # The following is probably overkill, but reads the VASP atom formats + expands
 # into a one dimensional string vector 
 #     species:    C    N    H    Pb   I
 #     speciescount:   1     1     6     1     3
-atomnames=String[]
-println(POSCAR["speciescount"])
-println(POSCAR["species"])
-
-for (speciescount,species) in zip(POSCAR["speciescount"],POSCAR["species"])
-    println("speciescount => ",speciescount," species => ",species)
-    for i=1:speciescount push!(atomnames,species) end
-    println(atomnames)
+atomnames=AbstractString[]
+for (count,specie) in zip(speciescount,species)
+    for i=1:count push!(atomnames,specie) end
 end
-# OK; we've built atomnames[], mainly for use with outputs... 
+println(atomnames)
+
+# SUPERCELL definition
+supercellexpansions=[ a*lattice[1,:] + b*lattice[2,:] + c*lattice[3,:] for a=0:1,b=0:1,c=0:1 ] #generates set of lattice vectors to apply for supercell expansions
+println("supercellexpansions ==>",supercellexpansions)
 
 function output_animated_xyz(eigenmode,eigenvector,freq,steps=32)
     filename= @sprintf("anim_%02d.xyz",eigenmode)
@@ -70,7 +65,7 @@ end
 
 function decompose_eigenmode_atomtype(eigenmode,realeigenvector,freq)
     print("Eigenmode: ",eigenmode)
-    @printf("\tFreq(cm-1): %03.1f\t",freq[2]*33.36)
+    @printf("\tFreq: %.2f THz %03.1f (cm-1)\t",freq[2],freq[2]*33.36)
 
     atomiccontribution = Dict{AbstractString,Float64}("Pb"=>0.0, "I" => 0.0, "N" => 0.0, "C" => 0.0, "H" => 0.0)
     for i=1:NATOMS
@@ -127,7 +122,7 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
     output_animated_xyz(eigenmode,realeigenvector,freq)
 
     decompose_eigenmode_atomtype(eigenmode,realeigenvector,freq)
-    #decompose_eigenmode_atom_contributions(eigenmode,realeigenvector)
+    decompose_eigenmode_atom_contributions(eigenmode,realeigenvector)
    
 #=    
     for I=10:12 # iodine indexes, hard coded
