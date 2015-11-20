@@ -83,8 +83,8 @@ function decompose_eigenmode_atomtype(eigenmode,realeigenvector,freq)
         atomiccontribution[contri]/=totallength
     end
 
-    for contri in species 
-        @printf("%s %.3f\t",contri,atomiccontribution[contri])
+    for contri in sort(species, by=x->atomicmass[x],rev=true) #Heaviest first, by lookup 
+        @printf("%s %.4f\t",contri,atomiccontribution[contri])
     end
 #    println(atomiccontribution)
 #    println(sum(values(atomiccontribution)))
