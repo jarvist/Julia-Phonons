@@ -1,7 +1,10 @@
 import YAML
 
 # This would be better in a general library!
-atomicmass = Dict{AbstractString,Float64}("H"=>1.00794, "C" => 12.01, "N" => 14.01, "S" => 32.07, "Zn" => 65.38, "I" => 126.9, "Pb" => 207.2)
+atomicmass = Dict{AbstractString,Float64}(
+"H"=>1.00794, "C" => 12.01, "N" => 14.01, "S" => 32.07, "Zn" => 65.38, 
+"I" => 126.9, "Br" => 79.904, "Cl" => 35.45,
+"Pb" => 207.2)
 #Zn is actually Sn; stupid work-around for Pymol seeing 'Sn' as 'S'
 #The initial test cases which I am covering, are phonons of CH3NH3.PbI3 and SnS
 
@@ -63,11 +66,13 @@ function output_animated_xyz(eigenmode,eigenvector,freq,steps=32)
 
 end
 
+# This decomposes the amount that the different atomtypes contribute to each phonon mode, in the unit cell
 function decompose_eigenmode_atomtype(eigenmode,realeigenvector,freq)
     print("Eigenmode: ",eigenmode)
     @printf("\tFreq: %.2f THz %03.1f (cm-1)\t",freq[2],freq[2]*33.36)
 
-    atomiccontribution = Dict{AbstractString,Float64}("Pb"=>0.0, "I" => 0.0, "N" => 0.0, "C" => 0.0, "H" => 0.0)
+    #atomiccontribution = Dict{AbstractString,Float64}("Pb"=>0.0, "Br" => 0.0, "N" => 0.0, "C" => 0.0, "H" => 0.0)
+    atomiccontribution=[species[i]=>0.0 for i in 1:length(species)]
     for i=1:NATOMS
         atomiccontribution[atomnames[i]]+= norm(realeigenvector[i,:])
     end
@@ -77,13 +82,14 @@ function decompose_eigenmode_atomtype(eigenmode,realeigenvector,freq)
         atomiccontribution[contri]/=sum(values(atomiccontribution))
     end
 
-    for contri in ["Pb","I","N","C","H"] 
+    for contri in species 
         @printf("%s %.3f\t",contri,atomiccontribution[contri])
     end
 #    println(atomiccontribution)
     println()
 end
 
+# This outputs, for each atom in the unit cell, the contribution in terms of displacement and energy, for the phonon
 function decompose_eigenmode_atom_contributions(eigenmode,realeigenvector)
     normsum=0.0
     normsummassweighted=0.0
@@ -122,7 +128,7 @@ for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
     output_animated_xyz(eigenmode,realeigenvector,freq)
 
     decompose_eigenmode_atomtype(eigenmode,realeigenvector,freq)
-    decompose_eigenmode_atom_contributions(eigenmode,realeigenvector)
+    #decompose_eigenmode_atom_contributions(eigenmode,realeigenvector)
    
 #=    
     for I=10:12 # iodine indexes, hard coded
