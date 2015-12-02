@@ -46,7 +46,7 @@ set size square
 file="MAPbI"
 set style line 11 lc rgb '#984EA3' # purple - Iodine 
 
-set terminal pngcairo size 1024,1024 enhanced font 'Helvetica'
+set terminal pngcairo size 1024,1024 enhanced font 'Helvetica,14'
 set output file.'_mode.png'
 p for [i=9:17:2] file.'.dat' using i:xtic(2) ls i 
 
@@ -57,7 +57,7 @@ replot
 file="MAPbCl"
 set style line 11 lc rgb '#4DAF4A' # Green  - Chloride
 
-set terminal pngcairo size 1024,1024 enhanced font 'Helvetica'
+set terminal pngcairo size 1024,1024 enhanced font 'Helvetica,14'
 set output file.'_mode.png'
 p for [i=9:17:2] file.'.dat' using i:xtic(2) ls i 
 
@@ -68,7 +68,7 @@ replot
 file="MAPbBr"
 set style line 11 lc rgb '#E41A1C' # Red - Bromide 
 
-set terminal pngcairo size 1024,1024 enhanced font 'Helvetica'
+set terminal pngcairo size 1024,1024 enhanced font 'Helvetica,14'
 set output file.'_mode.png'
 p for [i=9:17:2] file.'.dat' using i:xtic(2) ls i 
 
