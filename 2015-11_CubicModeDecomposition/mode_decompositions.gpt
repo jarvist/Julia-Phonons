@@ -34,7 +34,7 @@ set xlabel "Eigenmode"
 set ylabel "Energy fraction"
 
 #set xtics rotate by 90 offset character 0,-4,0 out nomirror
-set xtics rotate by 90 offset character 0,-0.66
+set xtics rotate by 90 offset character 0.3,-1 #0.66
 set ytics out nomirror
 set key top left outside horizontal autotitle columnhead
 
@@ -46,32 +46,41 @@ set size square
 file="MAPbI"
 set style line 11 lc rgb '#984EA3' # purple - Iodine 
 
-set terminal pngcairo size 1024,1024 enhanced font 'Helvetica,14'
+set terminal pngcairo size 1024,1024 enhanced font 'Helvetica,18'
 set output file.'_mode.png'
-p for [i=9:17:2] file.'.dat' using i:xtic(2) ls i 
+p for [i=9:17:2] file.'.dat' using i:xtic(2) ls i ,\
+  '' u ($0-1):(0.99):6 w labels notitle rotate by 90 right offset character (0,0.3) #,\
 
-set terminal postscript eps enhanced color font 'Helvetica,14'
+# attempted to plot composition of individual modes
+# doesn't work as we don't have a cumulative location for the modes, as we're
+# directly using a 'rowstacked histogram' in GNUPLOT rather than binning it
+# ourselves
+# for [i=9:17:2] '' using ($0+1):i:i w labels rotate by 90 right offset character (0,-2)
+
+set terminal postscript eps enhanced color font 'Helvetica,18'
 set output file.'_mode.eps'
 replot
 
 file="MAPbCl"
 set style line 11 lc rgb '#4DAF4A' # Green  - Chloride
 
-set terminal pngcairo size 1024,1024 enhanced font 'Helvetica,14'
+set terminal pngcairo size 1024,1024 enhanced font 'Helvetica,18'
 set output file.'_mode.png'
-p for [i=9:17:2] file.'.dat' using i:xtic(2) ls i 
-
-set terminal postscript eps enhanced color font 'Helvetica,14'
+p for [i=9:17:2] file.'.dat' using i:xtic(2) ls i,\
+  '' u ($0-1):(0.99):6 w labels notitle rotate by 90 right offset character (0,0.3)
+  
+set terminal postscript eps enhanced color font 'Helvetica,18'
 set output file.'_mode.eps'
 replot
 
 file="MAPbBr"
 set style line 11 lc rgb '#E41A1C' # Red - Bromide 
 
-set terminal pngcairo size 1024,1024 enhanced font 'Helvetica,14'
+set terminal pngcairo size 1024,1024 enhanced font 'Helvetica,18'
 set output file.'_mode.png'
-p for [i=9:17:2] file.'.dat' using i:xtic(2) ls i 
+p for [i=9:17:2] file.'.dat' using i:xtic(2) ls i,\
+  '' u ($0-1):(0.99):6 w labels notitle rotate by 90 right offset character (0,0.3)
 
-set terminal postscript eps enhanced color font 'Helvetica,14'
+set terminal postscript eps enhanced color font 'Helvetica,18'
 set output file.'_mode.eps'
 replot

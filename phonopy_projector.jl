@@ -14,11 +14,11 @@ mesh = YAML.load(open("mesh.yaml"))     #Phonopy mesh.yaml file; with phonons
 P=readdlm(open("POSCAR","r"))
 
 lattice=[ P[l,f]::Float64 for l=3:5,f=1:3 ]
-println(lattice)
+println(STDERR,lattice)
 species=[ P[6,f] for f=1:length(P[7,:]) ]
 speciescount=[ P[7,f]::Int for f=1:length(P[7,:]) ]
 NATOMS=sum(speciescount)
-println(species)
+println(STDERR,species)
 positions=[ P[l,f]::Float64 for l=9:9+NATOMS,f=1:3 ]
 # The following is probably overkill, but reads the VASP atom formats + expands
 # into a one dimensional string vector 
@@ -28,11 +28,11 @@ atomnames=AbstractString[]
 for (count,specie) in zip(speciescount,species)
     for i=1:count push!(atomnames,specie) end
 end
-println(atomnames)
+println(STDERR,atomnames)
 
 # SUPERCELL definition
 supercellexpansions=[ a*lattice[1,:] + b*lattice[2,:] + c*lattice[3,:] for a=0:1,b=0:1,c=0:1 ] #generates set of lattice vectors to apply for supercell expansions
-println("supercellexpansions ==>",supercellexpansions)
+println(STDERR,"supercellexpansions ==>",supercellexpansions)
 
 function output_animated_xyz(eigenmode,eigenvector,freq,steps=32)
     filename= @sprintf("anim_%02d.xyz",eigenmode)
@@ -108,6 +108,13 @@ function decompose_eigenmode_atom_contributions(eigenmode,realeigenvector)
         " Norm(mass weighted): ",(norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]]))/normsummassweighted)
     end
 end 
+
+# Header line for GNUPLOT, plotting mode decompositions.
+@printf("Mode 1 Freq THz THz cm1 cm1 ") 
+for contri in sort(species, by=x->atomicmass[x],rev=true) #Heaviest first, by lookup 
+    @printf("%s %s\t",contri,contri)
+end
+@printf("\n")
 
 # Data structure looks like: mesh["phonon"][1]["band"][2]["eigenvector"][1][2][1]
 for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
