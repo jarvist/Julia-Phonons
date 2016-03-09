@@ -2,6 +2,7 @@ module JuliaPhonons
 
 export atomicmass
 export read_POSCAR, read_meshyaml
+export output_animated_xyz, decompose_eigenmode_atomtype, decompose_eigenmode_atom_contributions
 
 import YAML
 
@@ -56,6 +57,9 @@ end
 function read_meshyaml(f::IOStream, P::POSCARtype)
     mesh = YAML.load(f)     #Phonopy mesh.yaml file; with phonons
 
+    eigenvectors=[]
+    eigenmodes=[]
+
 # Data structure looks like: mesh["phonon"][1]["band"][2]["eigenvector"][1][2][1]
     for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
 #    println("freq (THz) ==> ",freq[2], "\tWavenumbers (cm-1, 3sf) ==> ",freq[2]*33.36)
@@ -74,11 +78,19 @@ function read_meshyaml(f::IOStream, P::POSCARtype)
         # Array comprehension to reform mesh.yaml format into [n][d] shap
         realeigenvector=reshape(realeigenvector,P.natoms,3) # doesn't do anything?
 
-        output_animated_xyz(P,eigenmode,realeigenvector,freq)
+        push!(eigenvectors,realeigenvector)
+        push!(eigenmodes,freq[2])
+#        output_animated_xyz(P,eigenmode,realeigenvector,freq)
 
-        decompose_eigenmode_atomtype(P,eigenmode,realeigenvector,freq)
-        #decompose_eigenmode_atom_contributions(eigenmode,realeigenvector)
+#        decompose_eigenmode_atomtype(P,eigenmode,realeigenvector,freq)
+#        decompose_eigenmode_atom_contributions(P,eigenmode,realeigenvector)
     end
+
+#    print(eigenvectors)
+#    print(eigenmodes)
+
+    return eigenvectors, eigenmodes
+#    output_animated_xyz(P,42,eigenvectors[2],eigenmodes[2])
 end
 
 
@@ -115,9 +127,9 @@ function output_animated_xyz(POSCAR::POSCARtype, eigenmode,eigenvector,freq,step
 end
 
 # This decomposes the amount that the different atomtypes contribute to each phonon mode, in the unit cell
-function decompose_eigenmode_atomtype(POSCAR::POSCARtype,eigenmode,realeigenvector,freq)
-    print("Eigenmode: ",eigenmode)
-    @printf("\tFreq: %.2f THz %03.1f (cm-1)\t",freq[2],freq[2]*33.36)
+function decompose_eigenmode_atomtype(POSCAR::POSCARtype,label,realeigenvector,freq)
+    print("Eigenmode: ",label)
+    @printf("\tFreq: %.2f THz %03.1f (cm-1)\t",freq,freq*33.36)
 
     #atomiccontribution = Dict{AbstractString,Float64}("Pb"=>0.0, "Br" => 0.0, "N" => 0.0, "C" => 0.0, "H" => 0.0)
     atomiccontribution=[POSCAR.species[i]=>0.0 for i in 1:length(POSCAR.species)]
@@ -140,20 +152,20 @@ function decompose_eigenmode_atomtype(POSCAR::POSCARtype,eigenmode,realeigenvect
 end
 
 # This outputs, for each atom in the unit cell, the contribution in terms of displacement and energy, for the phonon
-function decompose_eigenmode_atom_contributions(eigenmode,realeigenvector)
+function decompose_eigenmode_atom_contributions(POSCAR::POSCARtype,eigenmode,realeigenvector)
     normsum=0.0
     normsummassweighted=0.0
-    for i=1:NATOMS
+    for i=1:POSCAR.natoms
         normsum+=norm(realeigenvector[i,:])
-        normsummassweighted+=norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]])
+        normsummassweighted+=norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]])
     end
     println("Norm sum: ",normsum, " Norm sum(mass weighted): ",normsummassweighted)
-    for i=1:NATOMS    
-        println("Mode: ",eigenmode," Atom: ",i," ",atomnames[i],
+    for i=1:POSCAR.natoms
+        println("Mode: ",eigenmode," Atom: ",i," ",POSCAR.atomnames[i],
 #        "\n",
 #        " Norm: ", norm(realeigenvector[i,:]),
         " Norm(weighted): ",norm(realeigenvector[i,:])/normsum,
-        " Norm(mass weighted): ",(norm(realeigenvector[i,:])/sqrt(atomicmass[atomnames[i]]))/normsummassweighted)
+        " Norm(mass weighted): ",(norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]]))/normsummassweighted)
     end
 end 
 
