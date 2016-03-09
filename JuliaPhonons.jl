@@ -4,14 +4,14 @@ import YAML
 atomicmass = Dict{AbstractString,Float64}(
 "H"=>1.00794, "C" => 12.01, "N" => 14.01, "S" => 32.07, "Zn" => 65.38, 
 "I" => 126.9, "Br" => 79.904, "Cl" => 35.45,
-"Pb" => 207.2)
+"Cs" => 132.0, "Pb" => 207.2)
 #Zn is actually Sn; stupid work-around for Pymol seeing 'Sn' as 'S'
 #The initial test cases which I am covering, are phonons of CH3NH3.PbI3 and SnS
 
-mesh = YAML.load(open("mesh.yaml"))     #Phonopy mesh.yaml file; with phonons
+mesh = YAML.load(open("CsPbI_eigenvector_mesh.yaml"))     #Phonopy mesh.yaml file; with phonons
 
 # Native VASP POSCAR reader
-P=readdlm(open("POSCAR","r"))
+P=readdlm(open("CsPbI3_POSCAR","r"))
 
 lattice=[ P[l,f]::Float64 for l=3:5,f=1:3 ]
 println(STDERR,lattice)
