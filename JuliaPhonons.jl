@@ -30,7 +30,8 @@ function read_POSCAR(f::IOStream)
     P=readdlm(f)
     POSCAR=POSCARtype()
 
-    POSCAR.lattice=[ P[l,f]::Float64 for l=3:5,f=1:3 ]
+    POSCAR.lattice=[ P[l,f]::Float64 for l=3:5,f=1:3 ] #Lattice 3x3 coordinates
+    POSCAR.lattice*=P[2,1]::Float64 #Lattice scaling factor
     println(STDERR,POSCAR.lattice)
     POSCAR.species=[ P[6,f] for f=1:length(P[7,:]) ]
     POSCAR.speciescount=[ P[7,f]::Int for f=1:length(P[7,:]) ]
@@ -61,6 +62,7 @@ function read_meshyaml(f::IOStream, P::POSCARtype)
     eigenmodes=[]
 
 # Data structure looks like: mesh["phonon"][1]["band"][2]["eigenvector"][1][2][1]
+# I think here, the 1 is referring to _first_ q-point (i.e. usually Gamma)
     for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
 #    println("freq (THz) ==> ",freq[2], "\tWavenumbers (cm-1, 3sf) ==> ",freq[2]*33.36)
 
@@ -114,7 +116,7 @@ function output_animated_xyz(POSCAR::POSCARtype, eigenmode,eigenvector,freq,step
 # NB: Currently uncertain as to whether to apply mass weighting by:-
 #   diving the eigenvector by sqrt(amu) - converting from Energy --> displacement
 #   multiplying the eigenvector by sqrt(amu) - weighting the Dynamic matrix with atomic mass ?
-            projection=POSCAR.lattice * (POSCAR.positions[i,:]' + 0.2 / sqrt(atomicmass[POSCAR.atomnames[i]]) * eigenvector[i,:]'*sin(phi))
+            projection=POSCAR.lattice * (POSCAR.positions[i,:]' + eigenvector[i,:]'*sin(phi) / sqrt(atomicmass[POSCAR.atomnames[i]]) )
             for supercellexpansion in POSCAR.supercell
                 supercellprojection=projection+supercellexpansion'
                 @printf(anim,"%s %f %f %f\n",POSCAR.atomnames[i],supercellprojection[1],supercellprojection[2],supercellprojection[3])
