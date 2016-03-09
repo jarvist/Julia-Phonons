@@ -128,8 +128,8 @@ end
 
 # This decomposes the amount that the different atomtypes contribute to each phonon mode, in the unit cell
 function decompose_eigenmode_atomtype(POSCAR::POSCARtype,label,realeigenvector,freq)
-    print("Eigenmode: ",label)
-    @printf("\tFreq: %.2f THz %03.1f (cm-1)\t",freq,freq*33.36)
+    print("EnergyFraction Eigenmode: ",label)
+    @printf("\tFreq: %.2f (THz) %03.1f (cm-1)\t",freq,freq*33.36)
 
     #atomiccontribution = Dict{AbstractString,Float64}("Pb"=>0.0, "Br" => 0.0, "N" => 0.0, "C" => 0.0, "H" => 0.0)
     atomiccontribution=[POSCAR.species[i]=>0.0 for i in 1:length(POSCAR.species)]
@@ -159,13 +159,13 @@ function decompose_eigenmode_atom_contributions(POSCAR::POSCARtype,eigenmode,rea
         normsum+=norm(realeigenvector[i,:])
         normsummassweighted+=norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]])
     end
-    println("Norm sum: ",normsum, " Norm sum(mass weighted): ",normsummassweighted)
+    println("Normalising sum (Energy): ",normsum, " Normalising sum (Displacement): ",normsummassweighted)
     for i=1:POSCAR.natoms
         println("Mode: ",eigenmode," Atom: ",i," ",POSCAR.atomnames[i],
 #        "\n",
 #        " Norm: ", norm(realeigenvector[i,:]),
-        " Norm(weighted): ",norm(realeigenvector[i,:])/normsum,
-        " Norm(mass weighted): ",(norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]]))/normsummassweighted)
+        "\t EnergyFraction: ",norm(realeigenvector[i,:])/normsum,
+        "\t DisplacementFraction: ",(norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]]))/normsummassweighted)
     end
 end 
 
