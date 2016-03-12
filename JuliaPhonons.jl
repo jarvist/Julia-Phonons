@@ -15,7 +15,8 @@ atomicmass = Dict{AbstractString,Float64}(
 #The initial test cases which I am covering, are phonons of CH3NH3.PbI3 and SnS
 
 type POSCARtype
-    lattice
+    lattice # 3x3 array of lattice vectors
+    volume::Float64 # Calculated from lattice vectors; units Angstrom^3
     natoms::Int
     species
     speciescount
@@ -23,16 +24,21 @@ type POSCARtype
     positions
     supercell
 end
-POSCARtype() = POSCARtype([],0,[],[],[],[],[]) #Eeek!
+POSCARtype() = POSCARtype([],0.0,0,[],[],[],[],[]) #Eeek!
 
 function read_POSCAR(f::IOStream)
 # Native VASP POSCAR reader
     P=readdlm(f)
-    POSCAR=POSCARtype()
+    POSCAR=POSCARtype() # Initialise custom type
 
     POSCAR.lattice=[ P[l,f]::Float64 for l=3:5,f=1:3 ] #Lattice 3x3 coordinates
     POSCAR.lattice*=P[2,1]::Float64 #Lattice scaling factor
+
+    POSCAR.volume=dot(vec(POSCAR.lattice[1,:]),cross(vec(POSCAR.lattice[2,:]),vec(POSCAR.lattice[3,:]))) # Quite verbose, but this is just V=a.bxc
+    
     println(STDERR,POSCAR.lattice)
+    println(STDERR,"Volume: ",POSCAR.volume)
+
     POSCAR.species=[ P[6,f] for f=1:length(P[7,:]) ]
     POSCAR.speciescount=[ P[7,f]::Int for f=1:length(P[7,:]) ]
     POSCAR.natoms=sum(POSCAR.speciescount)
