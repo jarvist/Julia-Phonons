@@ -26,7 +26,7 @@ type POSCARtype
 end
 POSCARtype() = POSCARtype([],0.0,0,[],[],[],[],[]) #Eeek!
 
-function read_POSCAR(f::IOStream)
+function read_POSCAR(f::IOStream;expansion=[1,1,1])
 # Native VASP POSCAR reader
     P=readdlm(f)
     POSCAR=POSCARtype() # Initialise custom type
@@ -55,7 +55,7 @@ function read_POSCAR(f::IOStream)
     println(STDERR,POSCAR.atomnames)
 
     # SUPERCELL definition. Should probably be somewhere else?
-    POSCAR.supercell=[ a*POSCAR.lattice[1,:] + b*POSCAR.lattice[2,:] + c*POSCAR.lattice[3,:] for a=0:1,b=0:1,c=0:1 ] #generates set of lattice vectors to apply for supercell expansions
+    POSCAR.supercell=[ a*POSCAR.lattice[1,:] + b*POSCAR.lattice[2,:] + c*POSCAR.lattice[3,:] for a=0:expansion[1]-1,b=0:expansion[2]-1,c=0:expansion[3]-1 ] #generates set of lattice vectors to apply for supercell expansions
     println(STDERR,"supercellexpansions ==>",POSCAR.supercell)
     
     return POSCAR

@@ -4,7 +4,7 @@
 push!(LOAD_PATH,"./") # Temporary versions of modules in PWD
 using JuliaPhonons 
 
-P=read_POSCAR(open("POSCAR"))
+P=read_POSCAR(open("POSCAR"),expansion=[2,2,2])
 eigenvectors,eigenmodes=read_meshyaml(open("mesh.yaml"),P)
 
 for (count,(eigenvector,eigenmode)) in enumerate(zip(eigenvectors,eigenmodes))
