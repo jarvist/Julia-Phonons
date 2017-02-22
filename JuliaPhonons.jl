@@ -165,18 +165,4 @@ function gnuplot_header()
     @printf("\n")
 end
 
-# Defunct code?
-#=    
-    for I=10:12 # iodine indexes, hard coded
-        println(show(positions))
-        println(show(positions[I,:]))
-        PbI=positions[I,:]-positions[9,:] # Vector from Pb to I
-        show(PbI)
-        @printf("I: %d PbI: %f %f %f Phonon-u: %f %f %f PbI.Phonon-u: %f\n",I,
-        PbI[1],PbI[2],PbI[3],
-        realeigenvector[I,1],realeigenvector[I,2],realeigenvector[I,3],
-        dot(PbI::Float64,realeigenvector[I]::Float64) )
-    end
-=#
-
 end
