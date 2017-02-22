@@ -26,6 +26,12 @@ type POSCARtype
 end
 POSCARtype() = POSCARtype([],0.0,0,[],[],[],[],[]) #Eeek!
 
+"""
+ read_POSCAR(f::IOStream;expansion=[1,1,1])
+
+ Reads in VASP POSCAR format to extract lattice vectors, and species/speciescount list. 
+ Also generates a set of supercell expansion vectors, defaulting to just the unitcell.
+"""
 function read_POSCAR(f::IOStream;expansion=[1,1,1])
 # Native VASP POSCAR reader
     P=readdlm(f)
@@ -61,6 +67,7 @@ function read_POSCAR(f::IOStream;expansion=[1,1,1])
     return POSCAR
 end
 
+"Reads phonopy YAML format, currently just extracting Gamma-point eigenvectors. (Or at least, it just takes the first eigenvector.)"
 function read_meshyaml(f::IOStream, P::POSCARtype)
     mesh = YAML.load(f)     #Phonopy mesh.yaml file; with phonons
 
@@ -109,7 +116,16 @@ function output_animated_xyz(POSCAR::POSCARtype, eigenmode,eigenvector,freq,step
     close(anim)
 end
 
-# This decomposes the amount that the different atomtypes contribute to each phonon mode, in the unit cell
+"""
+decompose_eigenmode_atomtype(POSCAR::POSCARtype,label,realeigenvector,freq)
+
+This decomposes the modes to the proportion that the different atomtypes (i.e.
+C, O, H etc.) contribute to each phonon mode, in the unit cell.
+
+Currently it is hard coded to produce the Energy Fraction % of the mode, in
+a form suitable for plotting with GNUPLOT into a colour coded bar chart.  
+Output is to STDOUT.
+"""
 function decompose_eigenmode_atomtype(POSCAR::POSCARtype,label,realeigenvector,freq)
     print("EnergyFraction Eigenmode: ",label)
     @printf("\tFreq: %.2f (THz) %03.1f (cm-1)\t",freq,freq*33.36)
@@ -134,7 +150,12 @@ function decompose_eigenmode_atomtype(POSCAR::POSCARtype,label,realeigenvector,f
     println()
 end
 
-# This outputs, for each atom in the unit cell, the contribution in terms of displacement and energy, for the phonon
+"""
+    decompose_eigenmode_atom_contributions(POSCAR::POSCARtype,eigenmode,realeigenvector)
+
+This outputs (to STDOUT), for each atom in the unit cell, the contribution in terms of 
+displacement, energy and inverse participation ratio, for the phonon mode.
+"""
 function decompose_eigenmode_atom_contributions(POSCAR::POSCARtype,eigenmode,realeigenvector)
     normsum=0.0
     normsumsquarred=0.0
