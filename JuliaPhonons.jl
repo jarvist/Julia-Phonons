@@ -72,66 +72,41 @@ function read_meshyaml(f::IOStream, P::POSCARtype)
     for (eigenmode,(eigenvector,freq)) in enumerate(mesh["phonon"][1]["band"])
 #    println("freq (THz) ==> ",freq[2], "\tWavenumbers (cm-1, 3sf) ==> ",freq[2]*33.36)
 
-## These functions used when figuring out form / normalisation of eigenvectors, from Phonopy mesh.yaml
-#    println("phonon[\"eigenvector\"] ==>",phonon["eigenvector"])
-#    println("eigenvector ==> ",eigenvector[2])
-#    for atom in eigenvector[2]
-#        #println ("atom ==> ",atom)
-#        @printf("atom %e %e %e \n",atom[1][1],atom[2][1],atom[3][1])
-#        disp=[atom[1][1],atom[2][1],atom[3][1]] #pull data out of YAML into sensible Julia Vector
-#        println(disp)
-#    end
-
         realeigenvector=[ eigenvector[2][n][d][1]::Float64 for n=1:P.natoms, d=1:3 ]
-        # Array comprehension to reform mesh.yaml format into [n][d] shap
+        # Array comprehension to reform mesh.yaml eigv format into [n][d] shape
         realeigenvector=reshape(realeigenvector,P.natoms,3) # doesn't do anything?
 
         push!(eigenvectors,realeigenvector)
         push!(eigenmodes,freq[2])
-#        output_animated_xyz(P,eigenmode,realeigenvector,freq)
-
-#        decompose_eigenmode_atomtype(P,eigenmode,realeigenvector,freq)
-#        decompose_eigenmode_atom_contributions(P,eigenmode,realeigenvector)
     end
 
-#    print(eigenvectors)
-#    print(eigenmodes)
-
     return eigenvectors, eigenmodes
-#    output_animated_xyz(P,42,eigenvectors[2],eigenmodes[2])
 end
 
-
+"Generates mass-weighted displacements of the modes in anim_??.xyz format.
+View the resulting with Pymol for live animations."
 function output_animated_xyz(POSCAR::POSCARtype, eigenmode,eigenvector,freq,steps=32)
     filename= @sprintf("anim_%02d.xyz",eigenmode)
     anim=open(filename,"w")
 
     for phi=0:2*pi/steps:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
-#        projection= lattice[1][1]*positions + 2*realeigenvector*sin(phi) # this does all the maths
-#        println("Lattice: ",lattice,"\n Eigenvec: ",realeigenvector)
-        #projection=positions*lattice + 2*sin(phi)*realeigenvector
-#        println("Projection: ",projection)
-
         # output routines to .xyz format
         @printf(anim,"%d\n\n",POSCAR.natoms*length(POSCAR.supercell)) # header for .xyz multi part files
+        
         for i=1:POSCAR.natoms
-#            println("u ==> ",projection[i,:])
-#            println("Positions[",i,"]: ",positions[i,:])
-#            println("Realeigenvector[",i,"]: ",realeigenvector[i,:])
+# Nb: norm of eigenvector is fraction of energy of this mode, therefore you need to 
+#   divide the eigenvector by sqrt(amu) - converting from Energy --> displacement
+            projection=POSCAR.positions[i,:]' + eigenvector[i,:]'*sin(phi) / sqrt(atomicmass[POSCAR.atomnames[i]]) # Fractional coordinates
+            projection*=POSCAR.lattice # Scale by lattice [3x3] matrix
 
-# NB: Currently uncertain as to whether to apply mass weighting by:-
-#   diving the eigenvector by sqrt(amu) - converting from Energy --> displacement
-#   multiplying the eigenvector by sqrt(amu) - weighting the Dynamic matrix with atomic mass ?
-            projection=POSCAR.lattice * (POSCAR.positions[i,:]' + eigenvector[i,:]'*sin(phi) / sqrt(atomicmass[POSCAR.atomnames[i]]) )
-            for supercellexpansion in POSCAR.supercell
+            for supercellexpansion in POSCAR.supercell # Runs through which unit cells to print
                 supercellprojection=projection+supercellexpansion'
                 @printf(anim,"%s %f %f %f\n",POSCAR.atomnames[i],supercellprojection[1],supercellprojection[2],supercellprojection[3])
             end
         end
     end
+    
     close(anim)
-
-
 end
 
 # This decomposes the amount that the different atomtypes contribute to each phonon mode, in the unit cell
