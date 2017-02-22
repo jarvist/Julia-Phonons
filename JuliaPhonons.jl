@@ -157,24 +157,28 @@ This outputs (to STDOUT), for each atom in the unit cell, the contribution in te
 displacement, energy and inverse participation ratio, for the phonon mode.
 """
 function decompose_eigenmode_atom_contributions(POSCAR::POSCARtype,eigenmode,realeigenvector)
-    normsum=0.0
-    normsumsquarred=0.0
-    normsummassweighted=0.0
+    sumE=0.0 # sum of energy fraction
+    sumEsquarred=0.0 # sum of energy fraction squared
+    sumd=0.0 # sum of displacements, which are got by mass-weighting: energy fraction / sqrt(a.m.u.)
     for i=1:POSCAR.natoms
-        normsum+=norm(realeigenvector[i,:])
-        normsumsquarred+=norm(realeigenvector[i,:])^2
-        normsummassweighted+=norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]])
+        sumE+=norm(realeigenvector[i,:])
+        sumEsquarred+=norm(realeigenvector[i,:])^2
+        sumd+=norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]])
     end
-    println("Normalising sum (Energy): ",normsum, " Normalising sum (Displacement): ",normsummassweighted)
+    println("Normalising sum (Energy): ",sumE, " Normalising sum (Displacement): ",sumd)
+
+    prE=0.0 # participation ratio, Energy
+    prd=0.0 # participation ratio, displacement
     for i=1:POSCAR.natoms
         println("Mode: ",eigenmode," Atom: ",i," ",POSCAR.atomnames[i],
-#        "\n",
-#        " Norm: ", norm(realeigenvector[i,:]),
-        "\t EnergyFraction: ",norm(realeigenvector[i,:])/normsum,
-        "\t DisplacementFraction: ",(norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]]))/normsummassweighted,
-        "\t IPR: ", norm(realeigenvector[i,:])^2/normsumsquarred)
+        "\t EnergyFraction: ",norm(realeigenvector[i,:])/sumE,
+        "\t DisplacementFraction: ",(norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]]))/sumd,
+        "\t PR-E: ", norm(realeigenvector[i,:])^2/sumEsquarred)
+
+        prE+=(norm(realeigenvector[i,:])/sumE)^2
+        prd+=((norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]]))/sumd)^2
     end
-    println("Mode $eigenmode IPR: ",1/normsumsquarred)
+    println("Mode $eigenmode IPR-Energy: ",1/prE," IPR-displacement: ",1/prd)
 end 
 
 # Header line for GNUPLOT, plotting mode decompositions.
