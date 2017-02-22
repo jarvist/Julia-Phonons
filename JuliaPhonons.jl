@@ -162,9 +162,11 @@ end
 # This outputs, for each atom in the unit cell, the contribution in terms of displacement and energy, for the phonon
 function decompose_eigenmode_atom_contributions(POSCAR::POSCARtype,eigenmode,realeigenvector)
     normsum=0.0
+    normsumsquarred=0.0
     normsummassweighted=0.0
     for i=1:POSCAR.natoms
         normsum+=norm(realeigenvector[i,:])
+        normsumsquarred+=norm(realeigenvector[i,:])^2
         normsummassweighted+=norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]])
     end
     println("Normalising sum (Energy): ",normsum, " Normalising sum (Displacement): ",normsummassweighted)
@@ -173,8 +175,10 @@ function decompose_eigenmode_atom_contributions(POSCAR::POSCARtype,eigenmode,rea
 #        "\n",
 #        " Norm: ", norm(realeigenvector[i,:]),
         "\t EnergyFraction: ",norm(realeigenvector[i,:])/normsum,
-        "\t DisplacementFraction: ",(norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]]))/normsummassweighted)
+        "\t DisplacementFraction: ",(norm(realeigenvector[i,:])/sqrt(atomicmass[POSCAR.atomnames[i]]))/normsummassweighted,
+        "\t IPR: ", norm(realeigenvector[i,:])^2/normsumsquarred)
     end
+    println("Mode $eigenmode IPR: ",1/normsumsquarred)
 end 
 
 # Header line for GNUPLOT, plotting mode decompositions.
