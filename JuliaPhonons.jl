@@ -10,6 +10,8 @@ import YAML
 atomicmass = Dict{AbstractString,Float64}(
 "H"=>1.00794, "C" => 12.01, "N" => 14.01, "S" => 32.07, "Zn" => 65.38, 
 "I" => 126.9, "Br" => 79.904, "Cl" => 35.45,
+"Cd" => 112.41, "Te"  => 127.60,
+"Ga" => 69.72, "As" => 74.9216,
 "Cs" => 132.0, "Pb" => 207.2)
 #Zn is actually Sn; stupid work-around for Pymol seeing 'Sn' as 'S'
 #The initial test cases which I am covering, are phonons of CH3NH3.PbI3 and SnS
