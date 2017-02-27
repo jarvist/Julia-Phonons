@@ -95,7 +95,7 @@ end
 "Generates mass-weighted displacements of the modes in anim_??.xyz format.
 View the resulting with Pymol for live animations."
 function output_animated_xyz(POSCAR::POSCARtype, eigenmode,eigenvector,freq,steps=32)
-    filename= @sprintf("anim_%02d.xyz",eigenmode)
+    filename= @sprintf("anim_%03d.xyz",eigenmode)
     anim=open(filename,"w")
 
     for phi=0:2*pi/steps:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
