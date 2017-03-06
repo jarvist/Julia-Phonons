@@ -2,7 +2,7 @@ module JuliaPhonons
 
 export atomicmass
 export read_POSCAR, read_meshyaml
-export output_animated_xyz, decompose_eigenmode_atomtype, decompose_eigenmode_atom_contributions
+export output_animated_xyz, decompose_eigenmode_atomtype, gnuplot_header, decompose_eigenmode_atom_contributions
 
 import YAML
 
@@ -128,9 +128,9 @@ Currently it is hard coded to produce the Energy Fraction % of the mode, in
 a form suitable for plotting with GNUPLOT into a colour coded bar chart.  
 Output is to STDOUT.
 """
-function decompose_eigenmode_atomtype(POSCAR::POSCARtype,label,realeigenvector,freq)
-    print("EnergyFraction Eigenmode: ",label)
-    @printf("\tFreq: %.2f (THz) %03.1f (cm-1)\t",freq,freq*33.36)
+function decompose_eigenmode_atomtype(POSCAR::POSCARtype,label,realeigenvector,freq ;f=STDOUT)
+    @printf(f,"Eigenmode: %d",label)
+    @printf(f,"\tFreq: %.2f (THz) %03.1f (cm-1)\t",freq,freq*33.36)
 
     #atomiccontribution = Dict{AbstractString,Float64}("Pb"=>0.0, "Br" => 0.0, "N" => 0.0, "C" => 0.0, "H" => 0.0)
     atomiccontribution=[POSCAR.species[i]=>0.0 for i in 1:length(POSCAR.species)]
@@ -145,12 +145,22 @@ function decompose_eigenmode_atomtype(POSCAR::POSCARtype,label,realeigenvector,f
     end
 
     for contri in sort(POSCAR.species, by=x->atomicmass[x],rev=true) #Heaviest first, by lookup 
-        @printf("%s %.4f\t",contri,atomiccontribution[contri])
+        @printf(f,"%s %.4f\t",contri,atomiccontribution[contri])
     end
 #    println(atomiccontribution)
 #    println(sum(values(atomiccontribution)))
-    println()
+    @printf(f,"\n")
 end
+
+# Header line for GNUPLOT, plotting mode decompositions.
+function gnuplot_header(POSCAR::POSCARtype;f=STDOUT)
+    @printf(f,"Mode 1 Freq THz THz cm1 cm1 ") 
+    for contri in sort(POSCAR.species, by=x->atomicmass[x],rev=true) #Heaviest first, by lookup 
+        @printf(f,"%s %s\t",contri,contri)
+    end
+    @printf(f,"\n")
+end
+
 
 """
     decompose_eigenmode_atom_contributions(POSCAR::POSCARtype,eigenmode,realeigenvector)
@@ -182,14 +192,5 @@ function decompose_eigenmode_atom_contributions(POSCAR::POSCARtype,eigenmode,rea
     end
     println("Mode $eigenmode IPR-Energy: ",1/prE," IPR-displacement: ",1/prd)
 end 
-
-# Header line for GNUPLOT, plotting mode decompositions.
-function gnuplot_header()
-    @printf("Mode 1 Freq THz THz cm1 cm1 ") 
-    for contri in sort(species, by=x->atomicmass[x],rev=true) #Heaviest first, by lookup 
-        @printf("%s %s\t",contri,contri)
-    end
-    @printf("\n")
-end
 
 end

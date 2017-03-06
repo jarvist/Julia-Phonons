@@ -1,0 +1,61 @@
+# line styles for ColorBrewer Set1
+# for use with qualitative/categorical data
+# provides 8 easy-to-name colors
+# compatible with gnuplot >=4.2
+# author: Anna Schneider
+
+# line styles
+set style line 9 lc rgb '#303030' # Grey - Pb - Jarv
+set style line 11 lc rgb '#984EA3' # purple - Iodine 
+set style line 13 lc rgb '#377EB8' # blue - Nitrogen
+set style line 15 lc rgb '#FF7F00' # orange - Carbon
+set style line 17 lc rgb '#E0E0E0' # Light grey - Hydrogen
+
+#set style line 3 lc rgb '#4DAF4A' # green
+#set style line 1 lc rgb '#E41A1C' # red
+#set style line 6 lc rgb '#FFFF33' # yellow
+#set style line 7 lc rgb '#A65628' # brown
+#set style line 8 lc rgb '#F781BF' # pink
+set style increment user
+
+set style data histograms
+set style histogram rowstacked
+
+#set style fill pattern border
+#set style fill solid 1.0
+set style fill solid border 0.7 
+
+unset key
+
+set yrange [0.0:1.0]
+set xrange [-0.5:35.5]
+
+set xlabel "Eigenmode"
+set ylabel "Energy fraction"
+
+#set xtics rotate by 90 offset character 0,-4,0 out nomirror
+set xtics rotate by 90 offset character 0.3,-1 #0.66
+set ytics out nomirror
+set key top left outside horizontal autotitle columnhead
+
+set size square
+
+
+file="mode_decomposition"
+
+# This old hard-wires set the colour for the halide in MA.PbX_3, where X is the
+# halide, from the WMD Phonon data.
+set style line 11 lc rgb '#984EA3' # purple - Iodine 
+#set style line 11 lc rgb '#4DAF4A' # Green  - Chloride
+#set style line 11 lc rgb '#E41A1C' # Red - Bromide 
+
+
+set terminal pngcairo size 1024,1024 enhanced font 'Helvetica,16'
+set output file.'.png'
+p for [i=9:17:2] file.'.dat' using i:xtic(2) ls i ,\
+  '' u ($0-1):(0.99):6 w labels notitle rotate by 90 right offset character (0,0.3) #,\
+
+set terminal postscript eps enhanced color font 'Helvetica,16'
+set output file.'.eps'
+replot
+
