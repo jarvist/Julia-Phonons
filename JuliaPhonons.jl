@@ -2,7 +2,7 @@ module JuliaPhonons
 
 export atomicmass
 export read_POSCAR, read_meshyaml
-export output_animated_xyz, decompose_eigenmode_atomtype, gnuplot_header, decompose_eigenmode_atom_contributions
+export output_animated_xyz, output_conflated_xyz, decompose_eigenmode_atomtype, gnuplot_header, decompose_eigenmode_atom_contributions
 
 import YAML
 
@@ -117,6 +117,38 @@ function output_animated_xyz(POSCAR::POSCARtype, eigenmode,eigenvector,freq,step
     
     close(anim)
 end
+
+"Conflated overlapping phonons; a work in proress."
+function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenmodes,steps=200)
+    filename= @sprintf("conflated_%03d.xyz",modecount)
+    anim=open(filename,"w")
+
+    for phi=0:2*pi/steps:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
+        phi/=eigenmodes[1] # multiply up to match frequency of first mode
+        # output routines to .xyz format
+        @printf(anim,"%d\n\n",POSCAR.natoms*length(POSCAR.supercell)) # header for .xyz multi part files
+        
+        for i=1:POSCAR.natoms
+# Nb: norm of eigenvector is fraction of energy of this mode, therefore you need to 
+#   divide the eigenvector by sqrt(amu) - converting from Energy --> displacement
+            projection=POSCAR.positions[i,:]'
+            
+            for (eigenmode,eigenvector) in zip(eigenmodes,eigenvectors)
+                projection+= (1/eigenmode) * eigenvector[i,:]'*sin(phi*eigenmode) / sqrt(atomicmass[POSCAR.atomnames[i]]) # Fractional coordinates
+            end
+
+            projection*=POSCAR.lattice # Scale by lattice [3x3] matrix
+
+            for supercellexpansion in POSCAR.supercell # Runs through which unit cells to print
+                supercellprojection=projection+supercellexpansion'
+                @printf(anim,"%s %f %f %f\n",POSCAR.atomnames[i],supercellprojection[1],supercellprojection[2],supercellprojection[3])
+            end
+        end
+    end
+    
+    close(anim)
+end
+
 
 """
 decompose_eigenmode_atomtype(POSCAR::POSCARtype,label,realeigenvector,freq)
