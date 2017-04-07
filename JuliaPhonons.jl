@@ -119,11 +119,11 @@ function output_animated_xyz(POSCAR::POSCARtype, eigenmode,eigenvector,freq,step
 end
 
 "Conflated overlapping phonons; a work in proress."
-function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenmodes,steps=200)
+function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenmodes,steps=200,repeats=8) 
     filename= @sprintf("conflated_%03d.xyz",modecount)
     anim=open(filename,"w")
 
-    for phi=0:2*pi/steps:2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
+    for phi=0:2*pi/steps:repeats*2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
         phi/=eigenmodes[1] # multiply up to match frequency of first mode
         # output routines to .xyz format
         @printf(anim,"%d\n\n",POSCAR.natoms*length(POSCAR.supercell)) # header for .xyz multi part files
@@ -134,10 +134,12 @@ function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenm
             projection=POSCAR.positions[i,:]'
             
             for (eigenmode,eigenvector) in zip(eigenmodes,eigenvectors)
+                # We're now iterating over normal modes
+                # add to this atom... weighted by 1/omega * eigenevctor * phase factor / sqrt(amu)
                 projection+= (1/eigenmode) * eigenvector[i,:]'*sin(phi*eigenmode) / sqrt(atomicmass[POSCAR.atomnames[i]]) # Fractional coordinates
             end
 
-            projection*=POSCAR.lattice # Scale by lattice [3x3] matrix
+            projection*=POSCAR.lattice # Scale by lattice [3x3] matrix; Fractional -> real coordinates
 
             for supercellexpansion in POSCAR.supercell # Runs through which unit cells to print
                 supercellprojection=projection+supercellexpansion'
