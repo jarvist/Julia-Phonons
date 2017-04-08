@@ -123,11 +123,32 @@ function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenm
     filename= @sprintf("conflated_%03d.xyz",modecount)
     anim=open(filename,"w")
 
+    t=0
     for phi=0:2*pi/steps:repeats*2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
         phi/=eigenmodes[1] # multiply up to match frequency of first mode
         # output routines to .xyz format
         @printf(anim,"%d\n\n",POSCAR.natoms*length(POSCAR.supercell)) # header for .xyz multi part files
         
+        # Experimental sound output
+        # Catch this with something like:  julia phonopy_projector.jl |  sox -r 8000 -c 1 -e mu-law -t u8 - -t ogg slow.ogg
+        dt=1/8000
+        T=266 #8000/30 # samples per frame
+        basefrequency=256 # 256 = middle C
+        for i in 1:T
+            n=0
+            t=t+dt # global time for generators
+            for (eigenmode,eigenvector) in zip(eigenmodes,eigenvectors)
+                #    volume         envelope function     waveform
+                n+= eigenmode*(1/eigenmode) * sin(phi*eigenmode)^2 * sin(t*eigenmode*basefrequency) * sin(t*eigenmode*basefrequency * 3/2) #3/2 - perfect 5th
+            end
+            n=n+5
+            n*=15 # apply volume
+            c=round(Int,abs(n))
+            #@printf("%f ",n)
+            @printf("%c",c) # put out binary character
+        end
+
+
         for i=1:POSCAR.natoms
 # Nb: norm of eigenvector is fraction of energy of this mode, therefore you need to 
 #   divide the eigenvector by sqrt(amu) - converting from Energy --> displacement
