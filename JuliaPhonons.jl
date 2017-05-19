@@ -51,7 +51,8 @@ function read_POSCAR(f::IOStream;expansion=[1,1,1])
     POSCAR.speciescount=[ P[7,f]::Int for f=1:length(P[7,:]) ]
     POSCAR.natoms=sum(POSCAR.speciescount)
     println(STDERR,POSCAR.species)
-    POSCAR.positions=[ P[l,f]::Float64 for l=9:9+POSCAR.natoms,f=1:3 ]
+    println(STDERR,"POSCAR.natoms: ",POSCAR.natoms)
+    POSCAR.positions=[ P[l,f]::Float64 for l=9:8+POSCAR.natoms,f=1:3 ]
 # The following is probably overkill, but reads the VASP atom formats + expands
 # into a one dimensional string vector 
 #     species:    C    N    H    Pb   I
