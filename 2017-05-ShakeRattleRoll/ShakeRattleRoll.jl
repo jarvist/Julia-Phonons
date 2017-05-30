@@ -11,7 +11,21 @@ eigenvectors,eigenmodes=read_meshyaml(open("../2015-11_CubicModeDecomposition/MA
 myf=open("mode_decomposition.dat","w")
 gnuplot_header(P,f=myf)
 
-show(eigenvectors[16])
+mode=16
+
+println("My eigenvector $mode, ")
+show(eigenvectors[mode])
+println("My eigenvalue for $mode, ")
+show(eigenmodes[mode])
+println()
+
+# See: https://stackoverflow.com/a/11319919
+# Essentially gen original + perturbed structure; best Quaternions minimises error on forwards / backwards transition
+#
+
+# Eeek! Hard coded.
+println("C: ",eigenvectors[mode][1,:])
+println("N: ",eigenvectors[mode][2,:])
 
 end
 
