@@ -1,8 +1,11 @@
 # POSCAR_volumes.jl 
 # Demonstration / scratchpad for using JuliaPhonons module
 
-push!(LOAD_PATH,"./") # Temporary versions of modules in PWD
+push!(LOAD_PATH,"../src") # Temporary versions of modules in PWD
 using JuliaPhonons 
+
+# OK, a pretty weird thing to do!
+# But the POSCAR reader, part of JuliaPhonons, can also do basic stats on the unit cell.
 
 for filename in ARGS
     P=read_POSCAR(open(filename))
