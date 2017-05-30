@@ -31,7 +31,7 @@
 #
 # In total, the movie shows about 8 picoseconds of real time.
 
-push!(LOAD_PATH,"./") # Temporary versions of modules in PWD
+push!(LOAD_PATH,"../src") # Temporary versions of modules in PWD
 using JuliaPhonons 
 
 P=read_POSCAR(open("POSCAR"),expansion=[2,2,2])
