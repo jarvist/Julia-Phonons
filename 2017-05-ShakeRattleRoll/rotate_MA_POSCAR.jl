@@ -24,7 +24,7 @@ for POSCARline in enumerate(POSCARlines)
     if (POSCARline[1]>=9 && POSCARline[1]<=9+8) #if MA; for Cubic Perov structs.
         r=float(split(POSCARline[2])) # "1.2 3.4 5.6" --> [1.2; 3.4; 5.6]
         r=shift+origin+(rotate*(r-origin)) # apply shift + rotate, shift back
-        r=mod(r,1) # Modulo arithmatic so that all {x,y,z} values are on [0,1]
+        r=mod.(r,1) # Modulo arithmatic so that all {x,y,z} values are on [0,1]
         @printf "  %.16f  %.16f  %.16f \n" r[1] r[2] r[3]
         # 16 digits of precision seems to match VASP output
     else # otherwise echo line unchanged to output
