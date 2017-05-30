@@ -28,7 +28,7 @@ for POSCARline in enumerate(POSCARlines)
         @printf "  %.16f  %.16f  %.16f \n" r[1] r[2] r[3]
         # 16 digits of precision seems to match VASP output
     else # otherwise echo line unchanged to output
-        print(POSCARline[2])
+        println(POSCARline[2])
     end
 end
 
