@@ -3,20 +3,21 @@
 Codes to play with Phonons, as output from Phonopy, in Julia.
 
 ![MAPI Phonon decomposition](plot-mode-decomposition/MAPI_mode.png)
+Per atom energy-mode decomposition.
 
 A work in progress.
 
-Currently reads a mesh.yaml from a Phonopy calculation (Gamma only, save eigenvectors); and a 
+These codes read a `mesh.yaml` from a Phonopy calculation (Gamma only, save the eigenvectors); and a 
 VASP POSCAR file on this structure, to collect coordinate and atom information.
 
 ## Using this
 
 Beware - Dragons!
 
-First do a standard `Phonopy` calculation pipeline, to get your `FORCE_SETS` etc.,
+* First do a standard `Phonopy` calculation pipeline, to get your `FORCE_SETS` etc.,
 then output the Eigenvectors to your `mesh.yaml`.
 
-The animation part of this package assumes that the mode is at Gamma, but
+* The animation part of this package assumes that the mode is at Gamma, but
 (touch wood), the Inverse Participation Ratio and Atomic decomposition by
 energy and displacement should also work when there's a complex phase factor,
 BUT THIS IS AS YET UNTESTED.
@@ -37,15 +38,17 @@ them.
 
 ## Features
 
-* 'Animated' .xyz files, with or without supercell expansion.
+- [x] 'Animated' .xyz files, with or without supercell expansion.
   * ((I recommend `Pymol` to visualise, with `set grid_mode,1` and  `show
     spheres` ))
-* Decomposition to individual atoms, norm of Energy or Displacement weighted phonon eigenvectors
-* Decomposition to atom type, for generating %fractional contribution of structure to phonon modes
-* Inverse Participation Ratio (IPR) of the mode by Energy and Displacement, as
+- [x] Decomposition to individual atoms, norm of Energy or Displacement weighted phonon eigenvectors
+- [x] Decomposition to atom type, for generating %fractional contribution of structure to phonon modes
+- [x] Inverse Participation Ratio (IPR) of the mode by Energy and Displacement, as
   a localisation metric.
+- [x] 'Conflation' animation of multiple modes, with the relative harmonies being displayed
+- [x] Generates a synchronised audio-track 'warble' for the relative harmonies of the conflation: https://www.youtube.com/watch?v=7UoPgFJcRoI
 
 ## Future plans
 
-* Symmetry / mode analysis
-* Maybe with these exciting new 'distortion antisymmetry' ideas: http://dx.doi.org/10.1038/ncomms9818
+- [ ] Symmetry / mode analysis
+- [ ] Maybe with these exciting new 'distortion antisymmetry' ideas: http://dx.doi.org/10.1038/ncomms9818
