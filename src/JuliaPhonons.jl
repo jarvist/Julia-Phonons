@@ -120,18 +120,24 @@ function output_animated_xyz(POSCAR::POSCARtype, eigenmode,eigenvector,freq,step
 end
 
 "Conflated overlapping phonons; a work in proress."
-function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenmodes,steps=200,repeats=8) 
+function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenmodes,steps=200,repeats=8; sound=false) 
     filename= @sprintf("conflated_%03d.xyz",modecount)
     anim=open(filename,"w")
+
+    if sound
+        println("... Experimental sound output engaged... ")
+        soundname= @sprintf("conflated_%03d.raw",modecount)
+        println(" Catch this with something like:  cat $soundname |  sox -r 8000 -c 1 -e mu-law -t u8 - -t ogg slow.ogg")
+        soundfile=open(soundname,"w")
+    end
 
     t=0
     for phi=0:2*pi/steps:repeats*2*pi-1e-6 #slightly offset from 2pi so we don't repeat 0=2pi frame
         phi/=eigenmodes[1] # multiply up to match frequency of first mode
         # output routines to .xyz format
         @printf(anim,"%d\n\n",POSCAR.natoms*length(POSCAR.supercell)) # header for .xyz multi part files
-        
-        # Experimental sound output
-        # Catch this with something like:  julia phonopy_projector.jl |  sox -r 8000 -c 1 -e mu-law -t u8 - -t ogg slow.ogg
+    
+        if sound
         dt=1/8000
         T=266 #8000/30 # samples per frame
         basefrequency=256 # 256 = middle C
@@ -146,9 +152,10 @@ function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenm
             n*=15 # apply volume
             c=round(Int,abs(n))
             #@printf("%f ",n)
-            @printf("%c",c) # put out binary character
+            @printf(soundfile,"%c",c) # put out binary character
         end
 
+        end
 
         for i=1:POSCAR.natoms
 # Nb: norm of eigenvector is fraction of energy of this mode, therefore you need to 
