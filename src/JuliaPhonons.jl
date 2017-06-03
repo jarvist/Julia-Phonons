@@ -166,7 +166,7 @@ function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenm
                 # We're now iterating over normal modes
                 # add to this atom... weighted by 1/omega * eigenevctor * phase factor / sqrt(amu)
                 projection+= (1/eigenmode) * eigenvector[i,:]'.*
-                sin.(phi*eigenmode.+ pi*projection/bz') / 
+                sin.(phi*eigenmode.+ pi*bz'/projection) / 
                 sqrt(atomicmass[POSCAR.atomnames[i]]) # Fractional coordinates
             end
 
