@@ -124,6 +124,8 @@ function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenm
     filename= @sprintf("conflated_%03d.xyz",modecount)
     anim=open(filename,"w")
 
+    println("Conflated animation, outputting to $filename")
+
     if sound
         println("... Experimental sound output engaged... ")
         soundname= @sprintf("conflated_%03d.raw",modecount)
