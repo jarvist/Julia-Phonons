@@ -120,7 +120,7 @@ function output_animated_xyz(POSCAR::POSCARtype, eigenmode,eigenvector,freq,step
 end
 
 "Conflated overlapping phonons; a work in proress."
-function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenmodes,steps=200,repeats=8; sound=false) 
+function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenmodes,steps=200,repeats=8; sound=false, bz=[0,0,0])  
     filename= @sprintf("conflated_%03d.xyz",modecount)
     anim=open(filename,"w")
 
@@ -165,7 +165,9 @@ function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenm
             for (eigenmode,eigenvector) in zip(eigenmodes,eigenvectors)
                 # We're now iterating over normal modes
                 # add to this atom... weighted by 1/omega * eigenevctor * phase factor / sqrt(amu)
-                projection+= (1/eigenmode) * eigenvector[i,:]'*sin(phi*eigenmode) / sqrt(atomicmass[POSCAR.atomnames[i]]) # Fractional coordinates
+                projection+= (1/eigenmode) * eigenvector[i,:]'.*
+                sin.(phi*eigenmode.+ pi*projection/bz') / 
+                sqrt(atomicmass[POSCAR.atomnames[i]]) # Fractional coordinates
             end
 
             projection*=POSCAR.lattice # Scale by lattice [3x3] matrix; Fractional -> real coordinates
