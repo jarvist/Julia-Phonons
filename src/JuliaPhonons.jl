@@ -74,8 +74,8 @@ end
 function read_meshyaml(f::IOStream, P::POSCARtype)
     mesh = YAML.load(f)     #Phonopy mesh.yaml file; with phonons
 
-    eigenvectors=[]
-    eigenmodes=[]
+    eigenvectors=[] #[] # Force type for stability.
+    eigenmodes=Float64[]
 
 # Data structure looks like: mesh["phonon"][1]["band"][2]["eigenvector"][1][2][1]
 # I think here, the 1 is referring to _first_ q-point (i.e. usually Gamma)
@@ -120,7 +120,7 @@ function output_animated_xyz(POSCAR::POSCARtype, eigenmode,eigenvector,freq,step
 end
 
 "Conflated overlapping phonons; a work in proress."
-function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenmodes,steps=200,repeats=8; sound=false, bz=[0,0,0])  
+function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenmodes,steps=200,repeats=8; sound=false, q=[0,0,0])  
     filename= @sprintf("conflated_%03d.xyz",modecount)
     anim=open(filename,"w")
 
@@ -162,19 +162,22 @@ function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenm
 #   divide the eigenvector by sqrt(amu) - converting from Energy --> displacement
             projection=POSCAR.positions[i,:]'
             
-            for (eigenmode,eigenvector) in zip(eigenmodes,eigenvectors)
-                # We're now iterating over normal modes
-                # add to this atom... weighted by 1/omega * eigenevctor * phase factor / sqrt(amu)
-                projection+= (1/eigenmode) * eigenvector[i,:]'.*
-                sin.(phi*eigenmode.+ pi*bz'/projection) / 
-                sqrt(atomicmass[POSCAR.atomnames[i]]) # Fractional coordinates
-            end
-
-            projection*=POSCAR.lattice # Scale by lattice [3x3] matrix; Fractional -> real coordinates
-
             for supercellexpansion in POSCAR.supercell # Runs through which unit cells to print
-                supercellprojection=projection+supercellexpansion'
-                @printf(anim,"%s %f %f %f\n",POSCAR.atomnames[i],supercellprojection[1],supercellprojection[2],supercellprojection[3])
+                sp=projection+supercellexpansion'/POSCAR.lattice 
+                    # OK, bit crazy to use these cached real-space diffs to get back to fractional...
+                # Supercell projection, in fractional coordinates (which can exceed 1)
+
+                for (eigenmode,eigenvector) in zip(eigenmodes,eigenvectors)
+                    # We're now iterating over normal modes
+                    # add to this atom... weighted by 1/omega * eigenevctor * phase factor / sqrt(amu)
+                    sp+= (1/eigenmode) * eigenvector[i,:]'.*
+                    sin.(phi*eigenmode.+ pi*sp/q') / 
+                    sqrt(atomicmass[POSCAR.atomnames[i]]) # Fractional coordinates
+                end
+
+                sp*=POSCAR.lattice # Scale by lattice [3x3] matrix; Fractional -> real coordinates
+
+                @printf(anim,"%s %f %f %f\n",POSCAR.atomnames[i],sp[1],sp[2],sp[3])
             end
         end
     end

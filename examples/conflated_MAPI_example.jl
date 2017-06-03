@@ -39,13 +39,13 @@ eigenvectors,eigenmodes=read_meshyaml(open("mesh.yaml"),P)
 
 #output_conflated_xyz(P,1,(eigenvectors[4],eigenvectors[12],eigenvectors[18]),(eigenmodes[4],eigenmodes[12],eigenmodes[18]) ) # generates files anim_{count}.xyz
 
-output_conflated_xyz(P,1,(eigenvectors[1],eigenvectors[2]), (eigenmodes[4],eigenmodes[4]) , bz=[0.1,0,0]) # generates files anim_{count}.xyz
+output_conflated_xyz(P,1,(eigenvectors[1],eigenvectors[2]), (eigenmodes[4],eigenmodes[4]) , q=[0.0,0.2,0.2]) # generates files anim_{count}.xyz
  
-output_conflated_xyz(P,2,(eigenvectors[4],eigenvectors[7],eigenvectors[10],eigenvectors[13],eigenvectors[16],eigenvectors[19]),(eigenmodes[4],eigenmodes[7],eigenmodes[10],eigenmodes[13],eigenmodes[16],eigenmodes[19]) , sound=true,bz=[0,0,1]) # generates files anim_{count}.xyz
+output_conflated_xyz(P,2,(eigenvectors[4],eigenvectors[7],eigenvectors[10],eigenvectors[13],eigenvectors[16],eigenvectors[19]),(eigenmodes[4],eigenmodes[7],eigenmodes[10],eigenmodes[13],eigenmodes[16],eigenmodes[19]) , sound=true,q=[0,0,1]) # generates files anim_{count}.xyz
  
 output_conflated_xyz(P,3,
 (eigenvectors[1],eigenvectors[10],eigenvectors[13],eigenvectors[16],eigenvectors[19]), 
 (eigenmodes[4],eigenmodes[10],eigenmodes[13],eigenmodes[16],eigenmodes[19]) , 
-bz=[1,0,0]) # generates files anim_{count}.xyz
+q=[1,0,0]) # generates files anim_{count}.xyz
  
 #output_conflated_xyz(P,3,(eigenvectors[4],eigenvectors[7],eigenvectors[10],eigenvectors[13],eigenvectors[16],eigenvectors[19],eigenvectors[22],eigenvectors[25],eigenvectors[28],eigenvectors[31],eigenvectors[34]),(eigenmodes[4],eigenmodes[7],eigenmodes[10],eigenmodes[13],eigenmodes[16],eigenmodes[19],eigenmodes[22],eigenmodes[25],eigenmodes[28],eigenmodes[31],eigenmodes[34]) ) # generates files anim_{count}.xyz
