@@ -37,11 +37,10 @@ using JuliaPhonons
 P=read_POSCAR(open("POSCAR"),expansion=[2,2,2])
 eigenvectors,eigenmodes=read_meshyaml(open("mesh.yaml"),P)
 
-output_conflated_xyz(P,0,(eigenvectors[1],eigenvectors[2]), (eigenmodes[4],eigenmodes[4]) , q=[1,0,0]) # generates files anim_{count}.xyz
-end
+output_conflated_xyz(P,0,(eigenvectors[1], eigenvectors[1]), (eigenmodes[4], eigenmodes[4]) , q=[0,1,0]) # generates files anim_{count}.xyz
 
-P=read_POSCAR(open("POSCAR"),expansion=[4,4,2])
-output_conflated_xyz(P,1,(eigenvectors[1],eigenvectors[2]), (eigenmodes[4],eigenmodes[4]) , q=[0.0,0.2,0.2]) # generates files anim_{count}.xyz
+P=read_POSCAR(open("POSCAR"),expansion=[4,4,4])
+output_conflated_xyz(P,1,(eigenvectors[1],eigenvectors[10]), (eigenmodes[4],eigenmodes[10]) , q=[0,0,1]) # generates files anim_{count}.xyz
  
 output_conflated_xyz(P,2,(eigenvectors[4],eigenvectors[7],eigenvectors[10],eigenvectors[13],eigenvectors[16],eigenvectors[19]),(eigenmodes[4],eigenmodes[7],eigenmodes[10],eigenmodes[13],eigenmodes[16],eigenmodes[19]) , sound=true,q=[0,0,1]) # generates files anim_{count}.xyz
  
