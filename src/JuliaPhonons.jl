@@ -120,7 +120,7 @@ function output_animated_xyz(POSCAR::POSCARtype, eigenmode,eigenvector,freq,step
 end
 
 "Conflated overlapping phonons; a work in progress."
-function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenmodes; steps=200,repeats=8, sound=false, q=[0,0,0])  
+function output_conflated_xyz(POSCAR::POSCARtype, modecount ,eigenvectors,eigenmodes; steps=128,repeats=8, sound=false, q=[0,0,0])  
     filename= @sprintf("conflated_%03d.xyz",modecount)
     anim=open(filename,"w")
 

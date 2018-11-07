@@ -335,7 +335,7 @@ display dof_fnumber 64.000000
 display dof_focaldist 0.700000
 
 # JARV - data loaded here, so could potentially just swap up this filename
-mol new conflated_000.xyz type xyz first 0 last -1 step 1 filebonds 1 autobonds 1 waitfor all
+mol new conflated.xyz type xyz first 0 last -1 step 1 filebonds 1 autobonds 1 waitfor all
 
 
 mol delrep 0 top
@@ -509,7 +509,7 @@ mol clipplane center 5 4 top {0.0 0.0 0.0}
 mol clipplane color  5 4 top {0.5 0.5 0.5 }
 mol clipplane normal 5 4 top {0.0 0.0 1.0}
 mol clipplane status 5 4 top {0}
-mol rename top conflated_002.xyz
+mol rename top conflated
 set viewpoints([molinfo top]) {{{1 0 0 -13.3477} {0 1 0 -13.2185} {0 0 1 -13.0478} {0 0 0 1}} {{0.251748 -0.0334372 0.967215 0} {0.237599 0.97095 -0.0282762 0} {-0.938171 0.236927 0.25238 0} {0 0 0 1}} {{0.122177 0 0 0} {0 0.122177 0 0} {0 0 0.122177 0} {0 0 0 1}} {{1 0 0 0} {0 1 0 0} {0 0 1 0} {0 0 0 1}}}
 lappend viewplist [molinfo top]
 set topmol [molinfo top]
@@ -658,7 +658,7 @@ color scale colors WBlk {1.0 1.0 1.0} {0.5 0.5 0.5} {0.0 0.0 0.0}
     {color Segname {} blue}
     {color Conformation {all} blue}
     {color Molecule {0} blue}
-    {color Molecule {conflated_002.xyz} blue}
+    {color Molecule {conflated} blue}
     {color Structure {3_10_Helix} blue}
     {color Surface {Grasp} gray}
     {color Labels {Springs} orange}
